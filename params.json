@@ -1,6 +1,6 @@
 {
   "name": "Temp-scala-hyperlinked-spec",
   "tagline": "Temporary project for showing idea for hyperlinking grammar BNF elements of Scala language specification.",
-  "body": "Can I link to checked-in HTML files?\r\n\r\n(Testing:\r\n\r\n[link: .](.)\r\n\r\n[link: ..](..)\r\n\r\n[link: .gitignore](.gitignore)\r\n\r\n)",
+  "body": "See [http://github.com/dsbos/temp-scala-hyperlinked-spec/blob/master/README.md](http://github.com/dsbos/temp-scala-hyperlinked-spec/blob/master/README.md) and\r\n [http://dsbos.github.io/temp-scala-hyperlinked-spec/2016-11-13_2.12_output/index.html](http://dsbos.github.io/temp-scala-hyperlinked-spec/2016-11-13_2.12_output/index.html).\r\n",
   "note": "Don't delete this file! It's used internally to help with page regeneration."
 }
