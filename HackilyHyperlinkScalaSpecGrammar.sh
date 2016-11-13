@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/sh
 # Hackily adds hypertext links from references to definitions of
 # non-terminals in the grammar BNF in the Scala language specification.
 #
@@ -16,18 +16,22 @@ OUTPUT_ROOT=${WORK_ROOT}/output
 
 mkdir -p ${WORK_ROOT}
 
-#DOWNLOAD=true
-DOWNLOAD=false
-if $DOWNLOAD ; then 
-	mkdir ${DOWNLOAD_ROOT} &&
+DOWNLOAD=true
+#DOWNLOAD=false
+if $DOWNLOAD ; then
+    mkdir -p ${DOWNLOAD_ROOT}
+    (
 	cd ${DOWNLOAD_ROOT} &&
-	wget \
-	    --wait=1  --timestamping `# download "gently" ` \
-	    --recursive --no-parent  `# download only spec. resources ` \
-	    `#-k` \
-	    --no-host-directories --cut-dirs="${CUT_DIRS}" \
-	    "${SOURCE_URL}"
+	    wget \
+		--wait=1  --timestamping `# download "gently" ` \
+		--recursive --no-parent  `# download only spec. resources ` \
+		--convert-links \
+		--no-host-directories --cut-dirs="${CUT_DIRS}" \
+		"${SOURCE_URL}"
+    )
 fi
+
+pwd
 
 # Exceptions:
 # 10-xml-expressions-and-patterns.html:BaseChar, Char, Comment, CombiningChar, Ideographic, NameChar, S, Reference
@@ -37,20 +41,19 @@ fi
 # 13-syntax-summary.html:#                 ::=  digit {digit} ‘.’ digit {digit} [exponentPart] [floatType]
 
 #
-
-(cd ${DOWNLOAD_ROOT} ; grep '::=' [0-9][0-9]-*.html)  \
-    | sed -e 's/<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf">//'  \
-    | grep -E -e ': *[^ ]+ *::=' 	  \
-    | sed -e 's/ *::=.*//'  \
-    | sed -E -e 's/(.*): *(.*)/\2 \1/'  \
-    | grep -v "13-syntax-summary.html"  \
-    | sort \
-    > ${WORK_ROOT}/NameToFileMap.tmp
-
+(
+    cd ${DOWNLOAD_ROOT}
+    grep '::=' [0-9][0-9]-*.html  \
+	| sed -e 's/<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf">//'  \
+	| grep -E -e ': *[^ ]+ *::=' 	  \
+	| sed -e 's/ *::=.*//'  \
+	| sed -E -e 's/(.*): *(.*)/\2 \1/'  \
+	| grep -v "13-syntax-summary.html"  \
+	| sort
+) > ${WORK_ROOT}/NameToFileMap.tmp
 rm -fr  ${OUTPUT_ROOT}
-
-#mkdir  ${OUTPUT_ROOT}
-cp  -r  ${DOWNLOAD_ROOT}  ${OUTPUT_ROOT}
+mkdir  ${OUTPUT_ROOT}
+cp  -r  ${DOWNLOAD_ROOT}/.  ${OUTPUT_ROOT}
 sed -E -i .bak \
     `# Mark identifier-like runs:  ` \
     -e '/data-lang="ebnf"/,/<\/code>/   s|([A-Za-z0-9]+)|<t>\1</t>|g'  \
@@ -89,7 +92,6 @@ sed -E -i .bak \
     \
      ${OUTPUT_ROOT}/*.html
 
-
 sed -E -i .bak \
     -e 's,<pd>([^<>]*)</pd>,<a name="\1"></a>\1,' \
     \
@@ -100,11 +102,10 @@ cat  ${WORK_ROOT}/NameToFileMap.tmp | uniq |
     while read name file ; do
        echo "s,<t>${name}</t>,<a href="${file}#${name}">${name}</a>,g"
     done
-) >  ${WORK_ROOT}/TempSed.tmp
+) >${WORK_ROOT}/TempSed.tmp
 
 
 sed -E -i .bak \
      -f  ${WORK_ROOT}/TempSed.tmp \
     \
      ${OUTPUT_ROOT}/*.html
-
