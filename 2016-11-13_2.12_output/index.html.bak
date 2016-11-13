@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+
+  <link rel="icon" type="image/png" href="public/favicon.ico">
+  <link rel="shortcut icon" type="image/png" href="public/favicon.ico">
+
+  <script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+  <title>Scala Language Specification</title>
+
+  <link rel="stylesheet" type="text/css" href="public/stylesheets/screen.css">
+  <link rel="stylesheet" type="text/css" href="public/stylesheets/screen-toc.css">
+  <link rel="stylesheet" type="text/css" href="public/stylesheets/fonts.css">
+</head>
+
+<body>
+<header>
+  <div id="header-main">
+  <img id="scala-logo" src="public/images/scala-spiral-white.png" />
+  <span id="title">Scala Language Specification</span>
+  <a id="github" href="https://github.com/scala/scala/tree/2.12.x/spec"><img src="public/images/github-logo@2x.png" alt="Edit at GitHub"></a>
+  </div>
+  <div id="header-sub">Version 2.12</div>
+</header>
+<main>
+<h1 id="table-of-contents">Table of Contents</h1>
+
+<ol>
+  
+  
+    <!-- exclude this page from the toc, not sure how to check
+         whether there is no chapter variable in the page  -->
+    
+      <li>
+        <a href="01-lexical-syntax.html"> Lexical Syntax</a>
+      </li>
+    
+  
+    <!-- exclude this page from the toc, not sure how to check
+         whether there is no chapter variable in the page  -->
+    
+      <li>
+        <a href="02-identifiers-names-and-scopes.html"> Identifiers, Names & Scopes</a>
+      </li>
+    
+  
+    <!-- exclude this page from the toc, not sure how to check
+         whether there is no chapter variable in the page  -->
+    
+      <li>
+        <a href="03-types.html"> Types</a>
+      </li>
+    
+  
+    <!-- exclude this page from the toc, not sure how to check
+         whether there is no chapter variable in the page  -->
+    
+      <li>
+        <a href="04-basic-declarations-and-definitions.html"> Basic Declarations & Definitions</a>
+      </li>
+    
+  
+    <!-- exclude this page from the toc, not sure how to check
+         whether there is no chapter variable in the page  -->
+    
+      <li>
+        <a href="05-classes-and-objects.html"> Classes & Objects</a>
+      </li>
+    
+  
+    <!-- exclude this page from the toc, not sure how to check
+         whether there is no chapter variable in the page  -->
+    
+      <li>
+        <a href="06-expressions.html"> Expressions</a>
+      </li>
+    
+  
+    <!-- exclude this page from the toc, not sure how to check
+         whether there is no chapter variable in the page  -->
+    
+      <li>
+        <a href="07-implicits.html"> Implicits</a>
+      </li>
+    
+  
+    <!-- exclude this page from the toc, not sure how to check
+         whether there is no chapter variable in the page  -->
+    
+      <li>
+        <a href="08-pattern-matching.html"> Pattern Matching</a>
+      </li>
+    
+  
+    <!-- exclude this page from the toc, not sure how to check
+         whether there is no chapter variable in the page  -->
+    
+      <li>
+        <a href="09-top-level-definitions.html"> Top-Level Definitions</a>
+      </li>
+    
+  
+    <!-- exclude this page from the toc, not sure how to check
+         whether there is no chapter variable in the page  -->
+    
+      <li>
+        <a href="10-xml-expressions-and-patterns.html"> XML</a>
+      </li>
+    
+  
+    <!-- exclude this page from the toc, not sure how to check
+         whether there is no chapter variable in the page  -->
+    
+      <li>
+        <a href="11-annotations.html"> Annotations</a>
+      </li>
+    
+  
+    <!-- exclude this page from the toc, not sure how to check
+         whether there is no chapter variable in the page  -->
+    
+      <li>
+        <a href="12-the-scala-standard-library.html"> Standard Library</a>
+      </li>
+    
+  
+    <!-- exclude this page from the toc, not sure how to check
+         whether there is no chapter variable in the page  -->
+    
+      <li>
+        <a href="13-syntax-summary.html"> Syntax Summary</a>
+      </li>
+    
+  
+    <!-- exclude this page from the toc, not sure how to check
+         whether there is no chapter variable in the page  -->
+    
+      <li>
+        <a href="14-references.html"> References</a>
+      </li>
+    
+  
+    <!-- exclude this page from the toc, not sure how to check
+         whether there is no chapter variable in the page  -->
+    
+      <li>
+        <a href="15-changelog.html"> Changelog</a>
+      </li>
+    
+  
+    <!-- exclude this page from the toc, not sure how to check
+         whether there is no chapter variable in the page  -->
+    
+  
+</ol>
+
+<h4 id="authors-and-contributors">Authors and Contributors</h4>
+
+<p>Martin Odersky, Philippe Altherr, Vincent Cremet, Gilles Dubochet, Burak Emir, Philipp Haller, Stéphane Micheloud, Nikolay Mihaylov, Adriaan Moors, Lukas Rytz, Michel Schinz, Erik Stenman, Matthias Zenger</p>
+
+<p>Markdown Conversion by Iain McGinniss.</p>
+
+<h4 id="preface">Preface</h4>
+
+<p>Scala is a Java-like programming language which unifies
+object-oriented and functional programming.  It is a pure
+object-oriented language in the sense that every value is an
+object. Types and behavior of objects are described by
+classes. Classes can be composed using mixin composition.  Scala is
+designed to work seamlessly with less pure but mainstream
+object-oriented languages like Java.</p>
+
+<p>Scala is a functional language in the sense that every function is a
+value. Nesting of function definitions and higher-order functions are
+naturally supported. Scala also supports a general notion of pattern
+matching which can model the algebraic types used in many functional
+languages.</p>
+
+<p>Scala has been designed to interoperate seamlessly with Java.
+Scala classes can call Java methods, create Java objects, inherit from Java
+classes and implement Java interfaces. None of this requires interface
+definitions or glue code.</p>
+
+<p>Scala has been developed from 2001 in the programming methods
+laboratory at EPFL. Version 1.0 was released in November 2003. This
+document describes the second version of the language, which was
+released in March 2006. It acts a reference for the language
+definition and some core library modules. It is not intended to teach
+Scala or its concepts; for this there are <a href="14-references.html">other documents</a>.</p>
+
+<p>Scala has been a collective effort of many people. The design and the
+implementation of version 1.0 was completed by Philippe Altherr,
+Vincent Cremet, Gilles Dubochet, Burak Emir, Stéphane Micheloud,
+Nikolay Mihaylov, Michel Schinz, Erik Stenman, Matthias Zenger, and
+the author. Iulian Dragos, Gilles Dubochet, Philipp Haller, Sean
+McDirmid, Lex Spoon, and Geoffrey Washburn joined in the effort to
+develop the second version of the language and tools.  Gilad Bracha,
+Craig Chambers, Erik Ernst, Matthias Felleisen, Shriram Krishnamurti,
+Gary Leavens, Sebastian Maneth, Erik Meijer, Klaus Ostermann, Didier
+Rémy, Mads Torgersen, and Philip Wadler have shaped the design of
+the language through lively and inspiring discussions and comments on
+previous versions of this document.  The contributors to the Scala
+mailing list have also given very useful feedback that helped us
+improve the language and its tools.</p>
+
+</main>
+</body>
+</html>

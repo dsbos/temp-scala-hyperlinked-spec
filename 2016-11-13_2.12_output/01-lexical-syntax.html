@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+
+  <link rel="icon" type="image/png" href="public/favicon.ico">
+  <link rel="shortcut icon" type="image/png" href="public/favicon.ico">
+
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      skipTags: ['script', 'noscript', 'style', 'textarea'],
+      processEscapes: true
+    }
+  });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/2.6-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+  <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.2/styles/default.min.css">
+  <!-- need to use include to see value of page.chapter variable -->
+  <style type="text/css">
+    h1 {
+  /* must reset here */
+  counter-reset: chapter 1;
+}
+h1:before {
+  /* and must reset again here */
+  counter-reset: chapter 1;
+  content: "Chapter " counter(chapter);
+  display: block;
+}
+
+h2 {
+  /* must increment here */
+  counter-increment: section;
+  counter-reset: subsection;
+}
+h2:before {
+  /* and must reset again here */
+  counter-reset: chapter 1;
+
+  content: counter(chapter) "." counter(section) ;
+  display: inline;
+  margin-right: 1em;
+}
+h2:after {
+  /* can only have one counter-reset per tag, so can't do it in h2/h2:before... */
+  counter-reset: example;
+}
+
+h3 {
+  /* must increment here */
+  counter-increment: subsection;
+}
+h3:before {
+  /* and must reset again here */
+  counter-reset: chapter 1;
+
+  content: counter(chapter) "." counter(section) "." counter(subsection);
+  display: inline;
+  margin-right: 1em;
+}
+h3[id*='example'] {
+  /* must increment here */
+  counter-increment: example;
+  display: inline;
+}
+h3[id*='example']:before {
+  /* and must reset again here */
+  counter-reset: chapter 1;
+
+  content: "Example " counter(chapter) "." counter(section) "." counter(example);
+  display: inline;
+  margin-right: 1em;
+}
+
+.no-numbering, .no-numbering:before, .no-numbering:after {
+  content: normal;
+  counter-reset: none;
+  counter-increment: none;
+}
+
+  </style>
+  <link rel="stylesheet" type="text/css" href="public/stylesheets/screen.css">
+  <link rel="stylesheet" type="text/css" media="(max-width: 1400px), (orientation: portrait)" href="public/stylesheets/screen-small.css">
+  <link rel="stylesheet" type="text/css" media="print" href="public/stylesheets/print.css">
+  <link rel="stylesheet" type="text/css" href="public/stylesheets/fonts.css">
+  <title>Lexical Syntax</title>
+</head>
+
+<body>
+  <header>
+    <nav id="chapters"><a id="github" href="https://github.com/scala/scala/tree/2.12.x/spec"><img src="public/images/github-logo@2x.png" alt="Edit at GitHub"></a><a href="01-lexical-syntax.html">1 Lexical Syntax</a><a href="02-identifiers-names-and-scopes.html">2 Identifiers, Names & Scopes</a><a href="03-types.html">3 Types</a><a href="04-basic-declarations-and-definitions.html">4 Basic Declarations & Definitions</a><a href="05-classes-and-objects.html">5 Classes & Objects</a><a href="06-expressions.html">6 Expressions</a><a href="07-implicits.html">7 Implicits</a><a href="08-pattern-matching.html">8 Pattern Matching</a><a href="09-top-level-definitions.html">9 Top-Level Definitions</a><a href="10-xml-expressions-and-patterns.html">10 XML</a><a href="11-annotations.html">11 Annotations</a><a href="12-the-scala-standard-library.html">12 Standard Library</a><a href="13-syntax-summary.html">13 Syntax Summary</a><a href="14-references.html">14 References</a><a href="15-changelog.html">15 Changelog</a></nav>
+  </header>
+  <aside class="left"><nav id="toc"></nav></aside>
+
+  <main id="content">
+<h1 id="lexical-syntax">Lexical Syntax</h1>
+
+<p>Scala programs are written using the Unicode Basic Multilingual Plane
+(<em>BMP</em>) character set; Unicode supplementary characters are not
+presently supported.  This chapter defines the two modes of Scala&#39;s
+lexical syntax, the Scala mode and the <em>XML mode</em>. If not
+otherwise mentioned, the following descriptions of Scala tokens refer
+to <em>Scala mode</em>, and literal characters ‘c’ refer to the ASCII fragment
+<code>\u0000</code> – <code>\u007F</code>.</p>
+
+<p>In Scala mode, <em>Unicode escapes</em> are replaced by the corresponding
+Unicode character with the given hexadecimal code.</p>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="UnicodeEscape"></a>UnicodeEscape ::= ‘\’ ‘u’ {‘u’} <a href=01-lexical-syntax.html#hexDigit>hexDigit</a> <a href=01-lexical-syntax.html#hexDigit>hexDigit</a> <a href=01-lexical-syntax.html#hexDigit>hexDigit</a> <a href=01-lexical-syntax.html#hexDigit>hexDigit</a>
+<a name="hexDigit"></a>hexDigit      ::= ‘0’ | … | ‘9’ | ‘A’ | … | ‘F’ | ‘a’ | … | ‘f’
+</code></pre></div>
+<!--
+TODO SI-4583: UnicodeEscape used to allow additional backslashes,
+and there is something in the code `evenSlashPrefix` that alludes to it,
+but I can't make it work nor can I imagine how this would make sense,
+so I removed it for now.
+-->
+
+<p>To construct tokens, characters are distinguished according to the following
+classes (Unicode general category given in parentheses):</p>
+
+<ol>
+<li>Whitespace characters. <code>\u0020 | \u0009 | \u000D | \u000A</code>.</li>
+<li>Letters, which include lower case letters (<code>Ll</code>), upper case letters (<code>Lu</code>),
+titlecase letters (<code>Lt</code>), other letters (<code>Lo</code>), letter numerals (<code>Nl</code>) and the
+two characters <code>\u0024 ‘$’</code> and <code>\u005F ‘_’</code>, which both count as upper case
+letters.</li>
+<li>Digits <code>‘0’ | … | ‘9’</code>.</li>
+<li>Parentheses <code>‘(’ | ‘)’ | ‘[’ | ‘]’ | ‘{’ | ‘}’</code>.</li>
+<li>Delimiter characters <code>‘`’ | ‘&#39;’ | ‘&quot;’ | ‘.’ | ‘;’ | ‘,’</code>.</li>
+<li>Operator characters. These consist of all printable ASCII characters
+(<code>\u0020</code> - <code>\u007E</code>) that are in none of the sets above, mathematical
+symbols (<code>Sm</code>) and other symbols (<code>So</code>).</li>
+</ol>
+
+<h2 id="identifiers">Identifiers</h2>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="op"></a>op       ::=  <t>opchar</t> {<t>opchar</t>}
+<a name="varid"></a>varid    ::=  <t>lower</t> <a href=01-lexical-syntax.html#idrest>idrest</a>
+<a name="boundvarid"></a>boundvarid ::=  <a href=01-lexical-syntax.html#varid>varid</a>
+             | ‘`’ <a href=01-lexical-syntax.html#varid>varid</a> ‘`’
+<a name="plainid"></a>plainid  ::=  <t>upper</t> <a href=01-lexical-syntax.html#idrest>idrest</a>
+           |  <a href=01-lexical-syntax.html#varid>varid</a>
+           |  <a href=01-lexical-syntax.html#op>op</a>
+<a name="id"></a>id       ::=  <a href=01-lexical-syntax.html#plainid>plainid</a>
+           |  ‘`’ <a href=01-lexical-syntax.html#stringLiteral>stringLiteral</a> ‘`’
+<a name="idrest"></a>idrest   ::=  {<t>letter</t> | <a href=01-lexical-syntax.html#digit>digit</a>} [‘_’ <a href=01-lexical-syntax.html#op>op</a>]
+</code></pre></div>
+<p>There are three ways to form an identifier. First, an identifier can
+start with a letter which can be followed by an arbitrary sequence of
+letters and digits. This may be followed by underscore <code>‘_‘</code>
+characters and another string composed of either letters and digits or
+of operator characters.  Second, an identifier can start with an operator
+character followed by an arbitrary sequence of operator characters.
+The preceding two forms are called <em>plain</em> identifiers.  Finally,
+an identifier may also be formed by an arbitrary string between
+back-quotes (host systems may impose some restrictions on which
+strings are legal for identifiers).  The identifier then is composed
+of all characters excluding the backquotes themselves.</p>
+
+<p>As usual, a longest match rule applies. For instance, the string</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">big_bob++=`def`
+</code></pre></div>
+<p>decomposes into the three identifiers <code>big_bob</code>, <code>++=</code>, and
+<code>def</code>. The rules for pattern matching further distinguish between
+<em>variable identifiers</em>, which start with a lower case letter, and
+<em>constant identifiers</em>, which do not.</p>
+
+<p>The ‘\$’ character is reserved for compiler-synthesized identifiers.
+User programs should not define identifiers which contain ‘\$’ characters.</p>
+
+<p>The following names are reserved words instead of being members of the
+syntactic class <code>id</code> of lexical identifiers.</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">abstract    case        catch       class       def
+do          else        extends     false       final
+finally     for         forSome     if          implicit
+import      lazy        macro       match       new
+null        object      override    package     private
+protected   return      sealed      super       this
+throw       trait       try         true        type
+val         var         while       with        yield
+_    :    =    =&gt;    &lt;-    &lt;:    &lt;%     &gt;:    #    @
+</code></pre></div>
+<p>The Unicode operators <code>\u21D2</code> ‘$\Rightarrow$’ and <code>\u2190</code> ‘$\leftarrow$’, which have the ASCII
+equivalents <code>=&gt;</code> and <code>&lt;-</code>, are also reserved.</p>
+
+<blockquote>
+<p>Here are examples of identifiers:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">    x         Object        maxIndex   p2p      empty_?
+    +         `yield`       αρετη     _y       dot_product_*
+    __system  _MAX_LEN_
+</code></pre></div></blockquote>
+
+<!-- -->
+
+<blockquote>
+<p>When one needs to access Java identifiers that are reserved words in Scala, use backquote-enclosed strings.
+For instance, the statement <code>Thread.yield()</code> is illegal, since <code>yield</code> is a reserved word in Scala.
+However, here&#39;s a work-around: <code>Thread.`yield`()</code></p>
+</blockquote>
+
+<h2 id="newline-characters">Newline Characters</h2>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="semi"></a>semi ::= ‘;’ |  <t>nl</t> {<t>nl</t>}
+</code></pre></div>
+<p>Scala is a line-oriented language where statements may be terminated by
+semi-colons or newlines. A newline in a Scala source text is treated
+as the special token “nl” if the three following criteria are satisfied:</p>
+
+<ol>
+<li>The token immediately preceding the newline can terminate a statement.</li>
+<li>The token immediately following the newline can begin a statement.</li>
+<li>The token appears in a region where newlines are enabled.</li>
+</ol>
+
+<p>The tokens that can terminate a statement are: literals, identifiers
+and the following delimiters and reserved words:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">this    null    true    false    return    type    &lt;xml-start&gt;
+_       )       ]       }
+</code></pre></div>
+<p>The tokens that can begin a statement are all Scala tokens <em>except</em>
+the following delimiters and reserved words:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">catch    else    extends    finally    forSome    match
+with    yield    ,    .    ;    :    =    =&gt;    &lt;-    &lt;:    &lt;%
+&gt;:    #    [    )    ]    }
+</code></pre></div>
+<p>A <code>case</code> token can begin a statement only if followed by a
+<code>class</code> or <code>object</code> token.</p>
+
+<p>Newlines are enabled in:</p>
+
+<ol>
+<li>all of a Scala source file, except for nested regions where newlines
+are disabled, and</li>
+<li>the interval between matching <code>{</code> and <code>}</code> brace tokens,
+except for nested regions where newlines are disabled.</li>
+</ol>
+
+<p>Newlines are disabled in:</p>
+
+<ol>
+<li>the interval between matching <code>(</code> and <code>)</code> parenthesis tokens, except for
+nested regions where newlines are enabled, and</li>
+<li>the interval between matching <code>[</code> and <code>]</code> bracket tokens, except for nested
+regions where newlines are enabled.</li>
+<li>The interval between a <code>case</code> token and its matching
+<code>=&gt;</code> token, except for nested regions where newlines are
+enabled.</li>
+<li>Any regions analyzed in <a href="01-lexical-syntax.html#xml-mode">XML mode</a>.</li>
+</ol>
+
+<p>Note that the brace characters of <code>{...}</code> escapes in XML and
+string literals are not tokens,
+and therefore do not enclose a region where newlines
+are enabled.</p>
+
+<p>Normally, only a single <code>nl</code> token is inserted between two
+consecutive non-newline tokens which are on different lines, even if there are multiple lines
+between the two tokens. However, if two tokens are separated by at
+least one completely blank line (i.e a line which contains no
+printable characters), then two <code>nl</code> tokens are inserted.</p>
+
+<p>The Scala grammar (given in full <a href="13-syntax-summary.html">here</a>)
+contains productions where optional <code>nl</code> tokens, but not
+semicolons, are accepted. This has the effect that a newline in one of these
+positions does not terminate an expression or statement. These positions can
+be summarized as follows:</p>
+
+<p>Multiple newline tokens are accepted in the following places (note
+that a semicolon in place of the newline would be illegal in every one
+of these cases):</p>
+
+<ul>
+<li>between the condition of a
+<a href="06-expressions.html#conditional-expressions">conditional expression</a>
+or <a href="06-expressions.html#while-loop-expressions">while loop</a> and the next
+following expression,</li>
+<li>between the enumerators of a
+<a href="06-expressions.html#for-comprehensions-and-for-loops">for-comprehension</a>
+and the next following expression, and</li>
+<li>after the initial <code>type</code> keyword in a
+<a href="04-basic-declarations-and-definitions.html#type-declarations-and-type-aliases">type definition or declaration</a>.</li>
+</ul>
+
+<p>A single new line token is accepted</p>
+
+<ul>
+<li>in front of an opening brace ‘{’, if that brace is a legal
+continuation of the current statement or expression,</li>
+<li>after an <a href="06-expressions.html#prefix,-infix,-and-postfix-operations">infix operator</a>,
+if the first token on the next line can start an expression,</li>
+<li>in front of a <a href="04-basic-declarations-and-definitions.html#function-declarations-and-definitions">parameter clause</a>, and</li>
+<li>after an <a href="11-annotations.html#user-defined-annotations">annotation</a>.</li>
+</ul>
+
+<blockquote>
+<p>The newline tokens between the two lines are not
+treated as statement separators.</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">if (x &gt; 0)
+  x = x - 1
+
+while (x &gt; 0)
+  x = x / 2
+
+for (x &lt;- 1 to 10)
+  println(x)
+
+type
+  IntList = List[Int]
+</code></pre></div></blockquote>
+
+<!-- -->
+
+<blockquote>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">new Iterator[Int]
+{
+  private var x = 0
+  def hasNext = true
+  def next = { x += 1; x }
+}
+</code></pre></div>
+<p>With an additional newline character, the same code is interpreted as
+an object creation followed by a local block:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">new Iterator[Int]
+
+{
+  private var x = 0
+  def hasNext = true
+  def next = { x += 1; x }
+}
+</code></pre></div></blockquote>
+
+<!-- -->
+
+<blockquote>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">  x &lt; 0 ||
+  x &gt; 10
+</code></pre></div>
+<p>With an additional newline character, the same code is interpreted as
+two expressions:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">  x &lt; 0 ||
+
+  x &gt; 10
+</code></pre></div></blockquote>
+
+<!-- -->
+
+<blockquote>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">def func(x: Int)
+        (y: Int) = x + y
+</code></pre></div>
+<p>With an additional newline character, the same code is interpreted as
+an abstract function definition and a syntactically illegal statement:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">def func(x: Int)
+
+        (y: Int) = x + y
+</code></pre></div></blockquote>
+
+<!-- -->
+
+<blockquote>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">@serializable
+protected class Data { ... }
+</code></pre></div>
+<p>With an additional newline character, the same code is interpreted as
+an attribute and a separate statement (which is syntactically illegal).</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">@serializable
+
+protected class Data { ... }
+</code></pre></div></blockquote>
+
+<h2 id="literals">Literals</h2>
+
+<p>There are literals for integer numbers, floating point numbers,
+characters, booleans, symbols, strings.  The syntax of these literals is in
+each case as in Java.</p>
+
+<!-- TODO
+  say that we take values from Java, give examples of some lits in
+  particular float and double.
+-->
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="Literal"></a>Literal  ::=  [‘-’] <a href=01-lexical-syntax.html#integerLiteral>integerLiteral</a>
+           |  [‘-’] <a href=01-lexical-syntax.html#floatingPointLiteral>floatingPointLiteral</a>
+           |  <a href=01-lexical-syntax.html#booleanLiteral>booleanLiteral</a>
+           |  <a href=01-lexical-syntax.html#characterLiteral>characterLiteral</a>
+           |  <a href=01-lexical-syntax.html#stringLiteral>stringLiteral</a>
+           |  <a href=01-lexical-syntax.html#symbolLiteral>symbolLiteral</a>
+           |  ‘null’
+</code></pre></div>
+<h3 id="integer-literals">Integer Literals</h3>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="integerLiteral"></a>integerLiteral  ::=  (<a href=01-lexical-syntax.html#decimalNumeral>decimalNumeral</a> | <a href=01-lexical-syntax.html#hexNumeral>hexNumeral</a>)
+                       [‘L’ | ‘l’]
+<a name="decimalNumeral"></a>decimalNumeral  ::=  ‘0’ | <a href=01-lexical-syntax.html#nonZeroDigit>nonZeroDigit</a> {<a href=01-lexical-syntax.html#digit>digit</a>}
+<a name="hexNumeral"></a>hexNumeral      ::=  ‘0’ (‘x’ | ‘X’) <a href=01-lexical-syntax.html#hexDigit>hexDigit</a> {<a href=01-lexical-syntax.html#hexDigit>hexDigit</a>}
+<a name="digit"></a>digit           ::=  ‘0’ | <a href=01-lexical-syntax.html#nonZeroDigit>nonZeroDigit</a>
+<a name="nonZeroDigit"></a>nonZeroDigit    ::=  ‘1’ | … | ‘9’
+</code></pre></div>
+<p>Integer literals are usually of type <code>Int</code>, or of type
+<code>Long</code> when followed by a <code>L</code> or
+<code>l</code> suffix. Values of type <code>Int</code> are all integer
+numbers between $-2^{31}$ and $2^{31}-1$, inclusive.  Values of
+type <code>Long</code> are all integer numbers between $-2^{63}$ and
+$2^{63}-1$, inclusive. A compile-time error occurs if an integer literal
+denotes a number outside these ranges.</p>
+
+<p>However, if the expected type <a href="06-expressions.html#expression-typing"><em>pt</em></a> of a literal
+in an expression is either <code>Byte</code>, <code>Short</code>, or <code>Char</code>
+and the integer number fits in the numeric range defined by the type,
+then the number is converted to type <em>pt</em> and the literal&#39;s type
+is <em>pt</em>. The numeric ranges given by these types are:</p>
+
+<table><thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code>Byte</code></td>
+<td>$-2^7$ to $2^7-1$</td>
+</tr>
+<tr>
+<td><code>Short</code></td>
+<td>$-2^{15}$ to $2^{15}-1$</td>
+</tr>
+<tr>
+<td><code>Char</code></td>
+<td>$0$ to $2^{16}-1$</td>
+</tr>
+</tbody></table>
+
+<blockquote>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">0          21          0xFFFFFFFF       -42L
+</code></pre></div></blockquote>
+
+<h3 id="floating-point-literals">Floating Point Literals</h3>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="floatingPointLiteral"></a>floatingPointLiteral  ::=  <a href=01-lexical-syntax.html#digit>digit</a> {<a href=01-lexical-syntax.html#digit>digit</a>} ‘.’ <a href=01-lexical-syntax.html#digit>digit</a> {<a href=01-lexical-syntax.html#digit>digit</a>} [<a href=01-lexical-syntax.html#exponentPart>exponentPart</a>] [<a href=01-lexical-syntax.html#floatType>floatType</a>]
+                        |  ‘.’ <a href=01-lexical-syntax.html#digit>digit</a> {<a href=01-lexical-syntax.html#digit>digit</a>} [<a href=01-lexical-syntax.html#exponentPart>exponentPart</a>] [<a href=01-lexical-syntax.html#floatType>floatType</a>]
+                        |  <a href=01-lexical-syntax.html#digit>digit</a> {<a href=01-lexical-syntax.html#digit>digit</a>} <a href=01-lexical-syntax.html#exponentPart>exponentPart</a> [<a href=01-lexical-syntax.html#floatType>floatType</a>]
+                        |  <a href=01-lexical-syntax.html#digit>digit</a> {<a href=01-lexical-syntax.html#digit>digit</a>} [<a href=01-lexical-syntax.html#exponentPart>exponentPart</a>] <a href=01-lexical-syntax.html#floatType>floatType</a>
+<a name="exponentPart"></a>exponentPart          ::=  (‘E’ | ‘e’) [‘+’ | ‘-’] <a href=01-lexical-syntax.html#digit>digit</a> {<a href=01-lexical-syntax.html#digit>digit</a>}
+<a name="floatType"></a>floatType             ::=  ‘F’ | ‘f’ | ‘D’ | ‘d’
+</code></pre></div>
+<p>Floating point literals are of type <code>Float</code> when followed by
+a floating point type suffix <code>F</code> or <code>f</code>, and are
+of type <code>Double</code> otherwise.  The type <code>Float</code>
+consists of all IEEE 754 32-bit single-precision binary floating point
+values, whereas the type <code>Double</code> consists of all IEEE 754
+64-bit double-precision binary floating point values.</p>
+
+<p>If a floating point literal in a program is followed by a token
+starting with a letter, there must be at least one intervening
+whitespace character between the two tokens.</p>
+
+<blockquote>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">0.0        1e30f      3.14159f      1.0e-100      .1
+</code></pre></div></blockquote>
+
+<!-- -->
+
+<blockquote>
+<p>The phrase <code>1.toString</code> parses as three different tokens:
+the integer literal <code>1</code>, a <code>.</code>, and the identifier <code>toString</code>.</p>
+</blockquote>
+
+<!-- -->
+
+<blockquote>
+<p><code>1.</code> is not a valid floating point literal because the mandatory digit after the <code>.</code> is missing.</p>
+</blockquote>
+
+<h3 id="boolean-literals">Boolean Literals</h3>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="booleanLiteral"></a>booleanLiteral  ::=  ‘true’ | ‘false’
+</code></pre></div>
+<p>The boolean literals <code>true</code> and <code>false</code> are
+members of type <code>Boolean</code>.</p>
+
+<h3 id="character-literals">Character Literals</h3>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="characterLiteral"></a>characterLiteral  ::=  ‘&#39;’ (<t>charNoQuoteOrNewline</t> | <a href=01-lexical-syntax.html#UnicodeEscape>UnicodeEscape</a> | <t>charEscapeSeq</t>) ‘&#39;’
+</code></pre></div>
+<p>A character literal is a single character enclosed in quotes.
+The character can be any Unicode character except the single quote
+delimiter or <code>\u000A</code> (LF) or <code>\u000D</code> (CR);
+or any Unicode character represented by either a
+<a href="01-lexical-syntax.html">Unicode escape</a> or by an <a href="01-lexical-syntax.html#escape-sequences">escape sequence</a>.</p>
+
+<blockquote>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">&#39;a&#39;    &#39;\u0041&#39;    &#39;\n&#39;    &#39;\t&#39;
+</code></pre></div></blockquote>
+
+<p>Note that although Unicode conversion is done early during parsing,
+so that Unicode characters are generally equivalent to their escaped
+expansion in the source text, literal parsing accepts arbitrary
+Unicode escapes, including the character literal <code>&#39;\u000A&#39;</code>,
+which can also be written using the escape sequence <code>&#39;\n&#39;</code>.</p>
+
+<h3 id="string-literals">String Literals</h3>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="stringLiteral"></a>stringLiteral  ::=  ‘&quot;’ {<a href=01-lexical-syntax.html#stringElement>stringElement</a>} ‘&quot;’
+<a name="stringElement"></a>stringElement  ::=  <t>charNoDoubleQuoteOrNewline</t> | <a href=01-lexical-syntax.html#UnicodeEscape>UnicodeEscape</a> | <t>charEscapeSeq</t>
+</code></pre></div>
+<p>A string literal is a sequence of characters in double quotes.
+The characters can be any Unicode character except the double quote
+delimiter or <code>\u000A</code> (LF) or <code>\u000D</code> (CR);
+or any Unicode character represented by either a
+<a href="01-lexical-syntax.html">Unicode escape</a> or by an <a href="01-lexical-syntax.html#escape-sequences">escape sequence</a>.</p>
+
+<p>If the string literal contains a double quote character, it must be escaped using
+<code>&quot;\&quot;&quot;</code>.</p>
+
+<p>The value of a string literal is an instance of class <code>String</code>.</p>
+
+<blockquote>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">&quot;Hello, world!\n&quot;
+&quot;\&quot;Hello,\&quot; replied the world.&quot;
+</code></pre></div></blockquote>
+
+<h4 id="multi-line-string-literals">Multi-Line String Literals</h4>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="stringLiteral"></a>stringLiteral   ::=  ‘&<t>quot</t>;&<t>quot</t>;&quot;’ <a href=01-lexical-syntax.html#multiLineChars>multiLineChars</a> ‘&<t>quot</t>;&<t>quot</t>;&quot;’
+<a name="multiLineChars"></a>multiLineChars  ::=  {[‘&quot;’] [‘&quot;’] <t>charNoDoubleQuote</t>} {‘&quot;’}
+</code></pre></div>
+<p>A multi-line string literal is a sequence of characters enclosed in
+triple quotes <code>&quot;&quot;&quot; ... &quot;&quot;&quot;</code>. The sequence of characters is
+arbitrary, except that it may contain three or more consecutive quote characters
+only at the very end. Characters
+must not necessarily be printable; newlines or other
+control characters are also permitted.  Unicode escapes work as everywhere else, but none
+of the escape sequences <a href="01-lexical-syntax.html#escape-sequences">here</a> are interpreted.</p>
+
+<blockquote>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">  &quot;&quot;&quot;the present string
+     spans three
+     lines.&quot;&quot;&quot;
+</code></pre></div>
+<p>This would produce the string:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">the present string
+     spans three
+     lines.
+</code></pre></div>
+<p>The Scala library contains a utility method <code>stripMargin</code>
+which can be used to strip leading whitespace from multi-line strings.
+The expression</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala"> &quot;&quot;&quot;the present string
+   |spans three
+   |lines.&quot;&quot;&quot;.stripMargin
+</code></pre></div>
+<p>evaluates to</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">the present string
+spans three
+lines.
+</code></pre></div>
+<p>Method <code>stripMargin</code> is defined in class
+<a href="http://www.scala-lang.org/api/current/#scala.collection.immutable.StringLike">scala.collection.immutable.StringLike</a>.
+Because there is a predefined
+<a href="06-expressions.html#implicit-conversions">implicit conversion</a> from <code>String</code> to
+<code>StringLike</code>, the method is applicable to all strings.</p>
+</blockquote>
+
+<h3 id="escape-sequences">Escape Sequences</h3>
+
+<p>The following escape sequences are recognized in character and string literals.</p>
+
+<table><thead>
+<tr>
+<th>charEscapeSeq</th>
+<th>unicode</th>
+<th>name</th>
+<th>char</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code>‘\‘ ‘b‘</code></td>
+<td><code>\u0008</code></td>
+<td>backspace</td>
+<td><code>BS</code></td>
+</tr>
+<tr>
+<td><code>‘\‘ ‘t‘</code></td>
+<td><code>\u0009</code></td>
+<td>horizontal tab</td>
+<td><code>HT</code></td>
+</tr>
+<tr>
+<td><code>‘\‘ ‘n‘</code></td>
+<td><code>\u000a</code></td>
+<td>linefeed</td>
+<td><code>LF</code></td>
+</tr>
+<tr>
+<td><code>‘\‘ ‘f‘</code></td>
+<td><code>\u000c</code></td>
+<td>form feed</td>
+<td><code>FF</code></td>
+</tr>
+<tr>
+<td><code>‘\‘ ‘r‘</code></td>
+<td><code>\u000d</code></td>
+<td>carriage return</td>
+<td><code>CR</code></td>
+</tr>
+<tr>
+<td><code>‘\‘ ‘&quot;‘</code></td>
+<td><code>\u0022</code></td>
+<td>double quote</td>
+<td><code>&quot;</code></td>
+</tr>
+<tr>
+<td><code>‘\‘ ‘&#39;‘</code></td>
+<td><code>\u0027</code></td>
+<td>single quote</td>
+<td><code>&#39;</code></td>
+</tr>
+<tr>
+<td><code>‘\‘ ‘\‘</code></td>
+<td><code>\u005c</code></td>
+<td>backslash</td>
+<td><code>\</code></td>
+</tr>
+</tbody></table>
+
+<p>A character with Unicode between 0 and 255 may also be represented by
+an octal escape, i.e. a backslash <code>&#39;\&#39;</code> followed by a
+sequence of up to three octal characters.</p>
+
+<p>It is a compile time error if a backslash character in a character or
+string literal does not start a valid escape sequence.</p>
+
+<h3 id="symbol-literals">Symbol literals</h3>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="symbolLiteral"></a>symbolLiteral  ::=  ‘&#39;’ <a href=01-lexical-syntax.html#plainid>plainid</a>
+</code></pre></div>
+<p>A symbol literal <code>&#39;x</code> is a shorthand for the expression
+<code>scala.Symbol(&quot;x&quot;)</code>. <code>Symbol</code> is a <a href="05-classes-and-objects.html#case-classes">case class</a>,
+which is defined as follows.</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">package scala
+final case class Symbol private (name: String) {
+  override def toString: String = &quot;&#39;&quot; + name
+}
+</code></pre></div>
+<p>The <code>apply</code> method of <code>Symbol</code>&#39;s companion object
+caches weak references to <code>Symbol</code>s, thus ensuring that
+identical symbol literals are equivalent with respect to reference
+equality.</p>
+
+<h2 id="whitespace-and-comments">Whitespace and Comments</h2>
+
+<p>Tokens may be separated by whitespace characters
+and/or comments. Comments come in two forms:</p>
+
+<p>A single-line comment is a sequence of characters which starts with
+<code>//</code> and extends to the end of the line.</p>
+
+<p>A multi-line comment is a sequence of characters between
+<code>/*</code> and <code>*/</code>. Multi-line comments may be nested,
+but are required to be properly nested.  Therefore, a comment like
+<code>/* /* */</code> will be rejected as having an unterminated
+comment.</p>
+
+<h2 id="xml-mode">XML mode</h2>
+
+<p>In order to allow literal inclusion of XML fragments, lexical analysis
+switches from Scala mode to XML mode when encountering an opening
+angle bracket ‘&lt;’ in the following circumstance: The ‘&lt;’ must be
+preceded either by whitespace, an opening parenthesis or an opening
+brace and immediately followed by a character starting an XML name.</p>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"> ( <t>whitespace</t> | ‘(’ | ‘{’ ) ‘&lt;’ (<a href=01-lexical-syntax.html#XNameStart>XNameStart</a> | ‘!’ | ‘?’)
+
+  <a name="XNameStart"></a>XNameStart ::= ‘_’ | <t>BaseChar</t> | <t>Ideographic</t> // as in W3C XML, but without ‘:’
+</code></pre></div>
+<p>The scanner switches from XML mode to Scala mode if either</p>
+
+<ul>
+<li>the XML expression or the XML pattern started by the initial ‘&lt;’ has been
+successfully parsed, or if</li>
+<li>the parser encounters an embedded Scala expression or pattern and
+forces the Scanner
+back to normal mode, until the Scala expression or pattern is
+successfully parsed. In this case, since code and XML fragments can be
+nested, the parser has to maintain a stack that reflects the nesting
+of XML and Scala expressions adequately.</li>
+</ul>
+
+<p>Note that no Scala tokens are constructed in XML mode, and that comments are interpreted
+as text.</p>
+
+<blockquote>
+<p>The following value definition uses an XML literal with two embedded
+Scala expressions:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">val b = &lt;book&gt;
+          &lt;title&gt;The Scala Language Specification&lt;/title&gt;
+          &lt;version&gt;{scalaBook.version}&lt;/version&gt;
+          &lt;authors&gt;{scalaBook.authors.mkList(&quot;&quot;, &quot;, &quot;, &quot;&quot;)}&lt;/authors&gt;
+        &lt;/book&gt;
+</code></pre></div></blockquote>
+
+  </main>
+
+  <script src="public/scripts/toc.js"></script>
+  <script src="public/scripts/highlight.pack.js"></script>
+  <script src="public/scripts/main.js"></script>
+</body>
+</html>

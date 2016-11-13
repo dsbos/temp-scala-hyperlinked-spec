@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+
+  <link rel="icon" type="image/png" href="public/favicon.ico">
+  <link rel="shortcut icon" type="image/png" href="public/favicon.ico">
+
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      skipTags: ['script', 'noscript', 'style', 'textarea'],
+      processEscapes: true
+    }
+  });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/2.6-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+  <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.2/styles/default.min.css">
+  <!-- need to use include to see value of page.chapter variable -->
+  <style type="text/css">
+    h1 {
+  /* must reset here */
+  counter-reset: chapter 9;
+}
+h1:before {
+  /* and must reset again here */
+  counter-reset: chapter 9;
+  content: "Chapter " counter(chapter);
+  display: block;
+}
+
+h2 {
+  /* must increment here */
+  counter-increment: section;
+  counter-reset: subsection;
+}
+h2:before {
+  /* and must reset again here */
+  counter-reset: chapter 9;
+
+  content: counter(chapter) "." counter(section) ;
+  display: inline;
+  margin-right: 1em;
+}
+h2:after {
+  /* can only have one counter-reset per tag, so can't do it in h2/h2:before... */
+  counter-reset: example;
+}
+
+h3 {
+  /* must increment here */
+  counter-increment: subsection;
+}
+h3:before {
+  /* and must reset again here */
+  counter-reset: chapter 9;
+
+  content: counter(chapter) "." counter(section) "." counter(subsection);
+  display: inline;
+  margin-right: 1em;
+}
+h3[id*='example'] {
+  /* must increment here */
+  counter-increment: example;
+  display: inline;
+}
+h3[id*='example']:before {
+  /* and must reset again here */
+  counter-reset: chapter 9;
+
+  content: "Example " counter(chapter) "." counter(section) "." counter(example);
+  display: inline;
+  margin-right: 1em;
+}
+
+.no-numbering, .no-numbering:before, .no-numbering:after {
+  content: normal;
+  counter-reset: none;
+  counter-increment: none;
+}
+
+  </style>
+  <link rel="stylesheet" type="text/css" href="public/stylesheets/screen.css">
+  <link rel="stylesheet" type="text/css" media="(max-width: 1400px), (orientation: portrait)" href="public/stylesheets/screen-small.css">
+  <link rel="stylesheet" type="text/css" media="print" href="public/stylesheets/print.css">
+  <link rel="stylesheet" type="text/css" href="public/stylesheets/fonts.css">
+  <title>Top-Level Definitions</title>
+</head>
+
+<body>
+  <header>
+    <nav id="chapters"><a id="github" href="https://github.com/scala/scala/tree/2.12.x/spec"><img src="public/images/github-logo@2x.png" alt="Edit at GitHub"></a><a href="01-lexical-syntax.html">1 Lexical Syntax</a><a href="02-identifiers-names-and-scopes.html">2 Identifiers, Names & Scopes</a><a href="03-types.html">3 Types</a><a href="04-basic-declarations-and-definitions.html">4 Basic Declarations & Definitions</a><a href="05-classes-and-objects.html">5 Classes & Objects</a><a href="06-expressions.html">6 Expressions</a><a href="07-implicits.html">7 Implicits</a><a href="08-pattern-matching.html">8 Pattern Matching</a><a href="09-top-level-definitions.html">9 Top-Level Definitions</a><a href="10-xml-expressions-and-patterns.html">10 XML</a><a href="11-annotations.html">11 Annotations</a><a href="12-the-scala-standard-library.html">12 Standard Library</a><a href="13-syntax-summary.html">13 Syntax Summary</a><a href="14-references.html">14 References</a><a href="15-changelog.html">15 Changelog</a></nav>
+  </header>
+  <aside class="left"><nav id="toc"></nav></aside>
+
+  <main id="content">
+<h1 id="top-level-definitions">Top-Level Definitions</h1>
+
+<h2 id="compilation-units">Compilation Units</h2>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="CompilationUnit"></a>CompilationUnit  ::=  {‘package’ <a href=09-top-level-definitions.html#QualId>QualId</a> <a href=01-lexical-syntax.html#semi>semi</a>} <a href=09-top-level-definitions.html#TopStatSeq>TopStatSeq</a>
+<a name="TopStatSeq"></a>TopStatSeq       ::=  <a href=09-top-level-definitions.html#TopStat>TopStat</a> {<a href=01-lexical-syntax.html#semi>semi</a> <a href=09-top-level-definitions.html#TopStat>TopStat</a>}
+<a name="TopStat"></a>TopStat          ::=  {<a href=11-annotations.html#Annotation>Annotation</a>} {<a href=05-classes-and-objects.html#Modifier>Modifier</a>} <a href=05-classes-and-objects.html#TmplDef>TmplDef</a>
+                   |  <a href=04-basic-declarations-and-definitions.html#Import>Import</a>
+                   |  <a href=09-top-level-definitions.html#Packaging>Packaging</a>
+                   |  <a href=09-top-level-definitions.html#PackageObject>PackageObject</a>
+                   |
+<a name="QualId"></a>QualId           ::=  <a href=01-lexical-syntax.html#id>id</a> {‘.’ <a href=01-lexical-syntax.html#id>id</a>}
+</code></pre></div>
+<p>A compilation unit consists of a sequence of packagings, import
+clauses, and class and object definitions, which may be preceded by a
+package clause.</p>
+
+<p>A <em>compilation unit</em></p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">package $p_1$;
+$\ldots$
+package $p_n$;
+$\mathit{stats}$
+</code></pre></div>
+<p>starting with one or more package
+clauses is equivalent to a compilation unit consisting of the
+packaging</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">package $p_1$ { $\ldots$
+  package $p_n$ {
+    $\mathit{stats}$
+  } $\ldots$
+}
+</code></pre></div>
+<p>Every compilation unit implicitly imports the following packages, in the given order:</p>
+
+<ol>
+<li>the package <code>java.lang</code>,</li>
+<li>the package <code>scala</code>, and</li>
+<li>the object <a href="12-the-scala-standard-library.html#the-predef-object"><code>scala.Predef</code></a>, unless there is an explicit top-level import that references <code>scala.Predef</code>.</li>
+</ol>
+
+<p>Members of a later import in that order hide members of an earlier import.</p>
+
+<p>The exception to the implicit import of <code>scala.Predef</code> can be useful to hide, e.g., predefined implicit conversions.</p>
+
+<h2 id="packagings">Packagings</h2>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="Packaging"></a>Packaging       ::=  ‘package’ <a href=09-top-level-definitions.html#QualId>QualId</a> [<t>nl</t>] ‘{’ <a href=09-top-level-definitions.html#TopStatSeq>TopStatSeq</a> ‘}’
+</code></pre></div>
+<p>A <em>package</em> is a special object which defines a set of member classes,
+objects and packages.  Unlike other objects, packages are not introduced
+by a definition.  Instead, the set of members of a package is determined by
+packagings.</p>
+
+<p>A packaging <code>package $p$ { $\mathit{ds}$ }</code> injects all
+definitions in $\mathit{ds}$ as members into the package whose qualified name
+is $p$. Members of a package are called <em>top-level</em> definitions.
+If a definition in $\mathit{ds}$ is labeled <code>private</code>, it is
+visible only for other members in the package.</p>
+
+<p>Inside the packaging, all members of package $p$ are visible under their
+simple names. However this rule does not extend to members of enclosing
+packages of $p$ that are designated by a prefix of the path $p$.</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">package org.net.prj {
+  ...
+}
+</code></pre></div>
+<p>all members of package <code>org.net.prj</code> are visible under their
+simple names, but members of packages <code>org</code> or <code>org.net</code> require
+explicit qualification or imports.</p>
+
+<p>Selections $p$.$m$ from $p$ as well as imports from $p$
+work as for objects. However, unlike other objects, packages may not
+be used as values. It is illegal to have a package with the same fully
+qualified name as a module or a class.</p>
+
+<p>Top-level definitions outside a packaging are assumed to be injected
+into a special empty package. That package cannot be named and
+therefore cannot be imported. However, members of the empty package
+are visible to each other without qualification.</p>
+
+<h2 id="package-objects">Package Objects</h2>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="PackageObject"></a>PackageObject   ::=  ‘package’ ‘object’ <a href=05-classes-and-objects.html#ObjectDef>ObjectDef</a>
+</code></pre></div>
+<p>A <em>package object</em> <code>package object $p$ extends $t$</code> adds the
+members of template $t$ to the package $p$. There can be only one
+package object per package. The standard naming convention is to place
+the definition above in a file named <code>package.scala</code> that&#39;s
+located in the directory corresponding to package $p$.</p>
+
+<p>The package object should not define a member with the same name as
+one of the top-level objects or classes defined in package $p$. If
+there is a name conflict, the behavior of the program is currently
+undefined. It is expected that this restriction will be lifted in a
+future version of Scala.</p>
+
+<h2 id="package-references">Package References</h2>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="QualId"></a>QualId           ::=  <a href=01-lexical-syntax.html#id>id</a> {‘.’ <a href=01-lexical-syntax.html#id>id</a>}
+</code></pre></div>
+<p>A reference to a package takes the form of a qualified identifier.
+Like all other references, package references are relative. That is,
+a package reference starting in a name $p$ will be looked up in the
+closest enclosing scope that defines a member named $p$.</p>
+
+<p>The special predefined name <code>_root_</code> refers to the
+outermost root package which contains all top-level packages.</p>
+
+<h6 id="example">Example</h6>
+
+<p>Consider the following program:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">package b {
+  class B
+}
+
+package a.b {
+  class A {
+    val x = new _root_.b.B
+  }
+}
+</code></pre></div>
+<p>Here, the reference <code>_root_.b.B</code> refers to class <code>B</code> in the
+toplevel package <code>b</code>. If the <code>_root_</code> prefix had been
+omitted, the name <code>b</code> would instead resolve to the package
+<code>a.b</code>, and, provided that package does not also
+contain a class <code>B</code>, a compiler-time error would result.</p>
+
+<h2 id="programs">Programs</h2>
+
+<p>A <em>program</em> is a top-level object that has a member method
+<em>main</em> of type <code>(Array[String])Unit</code>. Programs can be
+executed from a command shell. The program&#39;s command arguments are
+passed to the <code>main</code> method as a parameter of type
+<code>Array[String]</code>.</p>
+
+<p>The <code>main</code> method of a program can be directly defined in the
+object, or it can be inherited. The scala library defines a special class
+<code>scala.App</code> whose body acts as a <code>main</code> method.
+An objects $m$ inheriting from this class is thus a program,
+which executes the initialization code of the object $m$.</p>
+
+<h6 id="example">Example</h6>
+
+<p>The following example will create a hello world program by defining
+a method <code>main</code> in module <code>test.HelloWorld</code>.</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">package test
+object HelloWorld {
+  def main(args: Array[String]) { println(&quot;Hello World&quot;) }
+}
+</code></pre></div>
+<p>This program can be started by the command</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">scala test.HelloWorld
+</code></pre></div>
+<p>In a Java environment, the command</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">java test.HelloWorld
+</code></pre></div>
+<p>would work as well.</p>
+
+<p><code>HelloWorld</code> can also be defined without a <code>main</code> method
+by inheriting from <code>App</code> instead:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">package test
+object HelloWorld extends App {
+  println(&quot;Hello World&quot;)
+}
+</code></pre></div>
+  </main>
+
+  <script src="public/scripts/toc.js"></script>
+  <script src="public/scripts/highlight.pack.js"></script>
+  <script src="public/scripts/main.js"></script>
+</body>
+</html>

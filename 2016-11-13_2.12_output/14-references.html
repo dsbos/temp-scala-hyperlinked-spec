@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+
+  <link rel="icon" type="image/png" href="public/favicon.ico">
+  <link rel="shortcut icon" type="image/png" href="public/favicon.ico">
+
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      skipTags: ['script', 'noscript', 'style', 'textarea'],
+      processEscapes: true
+    }
+  });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/2.6-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+  <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.2/styles/default.min.css">
+  <!-- need to use include to see value of page.chapter variable -->
+  <style type="text/css">
+    h1 {
+  /* must reset here */
+  counter-reset: chapter 14;
+}
+h1:before {
+  /* and must reset again here */
+  counter-reset: chapter 14;
+  content: "Chapter " counter(chapter);
+  display: block;
+}
+
+h2 {
+  /* must increment here */
+  counter-increment: section;
+  counter-reset: subsection;
+}
+h2:before {
+  /* and must reset again here */
+  counter-reset: chapter 14;
+
+  content: counter(chapter) "." counter(section) ;
+  display: inline;
+  margin-right: 1em;
+}
+h2:after {
+  /* can only have one counter-reset per tag, so can't do it in h2/h2:before... */
+  counter-reset: example;
+}
+
+h3 {
+  /* must increment here */
+  counter-increment: subsection;
+}
+h3:before {
+  /* and must reset again here */
+  counter-reset: chapter 14;
+
+  content: counter(chapter) "." counter(section) "." counter(subsection);
+  display: inline;
+  margin-right: 1em;
+}
+h3[id*='example'] {
+  /* must increment here */
+  counter-increment: example;
+  display: inline;
+}
+h3[id*='example']:before {
+  /* and must reset again here */
+  counter-reset: chapter 14;
+
+  content: "Example " counter(chapter) "." counter(section) "." counter(example);
+  display: inline;
+  margin-right: 1em;
+}
+
+.no-numbering, .no-numbering:before, .no-numbering:after {
+  content: normal;
+  counter-reset: none;
+  counter-increment: none;
+}
+
+  </style>
+  <link rel="stylesheet" type="text/css" href="public/stylesheets/screen.css">
+  <link rel="stylesheet" type="text/css" media="(max-width: 1400px), (orientation: portrait)" href="public/stylesheets/screen-small.css">
+  <link rel="stylesheet" type="text/css" media="print" href="public/stylesheets/print.css">
+  <link rel="stylesheet" type="text/css" href="public/stylesheets/fonts.css">
+  <title>References</title>
+</head>
+
+<body>
+  <header>
+    <nav id="chapters"><a id="github" href="https://github.com/scala/scala/tree/2.12.x/spec"><img src="public/images/github-logo@2x.png" alt="Edit at GitHub"></a><a href="01-lexical-syntax.html">1 Lexical Syntax</a><a href="02-identifiers-names-and-scopes.html">2 Identifiers, Names & Scopes</a><a href="03-types.html">3 Types</a><a href="04-basic-declarations-and-definitions.html">4 Basic Declarations & Definitions</a><a href="05-classes-and-objects.html">5 Classes & Objects</a><a href="06-expressions.html">6 Expressions</a><a href="07-implicits.html">7 Implicits</a><a href="08-pattern-matching.html">8 Pattern Matching</a><a href="09-top-level-definitions.html">9 Top-Level Definitions</a><a href="10-xml-expressions-and-patterns.html">10 XML</a><a href="11-annotations.html">11 Annotations</a><a href="12-the-scala-standard-library.html">12 Standard Library</a><a href="13-syntax-summary.html">13 Syntax Summary</a><a href="14-references.html">14 References</a><a href="15-changelog.html">15 Changelog</a></nav>
+  </header>
+  <aside class="left"><nav id="toc"></nav></aside>
+
+  <main id="content">
+<h1 id="references">References</h1>
+
+<p>TODO (see comments in markdown source)</p>
+
+<!-- TODO
+
+provide a nice reading list to get up to speed with theory,...
+
+## Scala's Foundations
+[@scala-overview-tech-report;
+@odersky:scala-experiment;
+@odersky:sca;
+@odersky-et-al:ecoop03;
+@odersky-zenger:fool12]
+
+## Learning Scala
+
+## Related Work
+
+%% Article
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@article{milner:polymorphism,
+  author    = {Robin Milner},
+  title     = {A {T}heory of {T}ype {P}olymorphism in {P}rogramming},
+  journal   = {Journal of Computer and System Sciences},
+  year      = {1978},
+  month     = {Dec},
+  volume    = {17},
+  pages     = {348-375},
+  folder    = { 2-1}
+}
+
+@Article{wirth:ebnf,
+  author    = "Niklaus Wirth",
+  title     = "What can we do about the unnecessary diversity of notation
+for syntactic definitions?",
+  journal   = "Comm. ACM",
+  year      = 1977,
+  volume    = 20,
+  pages     = "822-823",
+  month     = nov
+}
+
+%% Book
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@Book{abelson-sussman:structure,
+  author    = {Harold Abelson and Gerald Jay Sussman and Julie Sussman},
+  title     = {The Structure and Interpretation of Computer Programs, 2nd
+                  edition},
+  publisher = {MIT Press},
+  address   = {Cambridge, Massachusetts},
+  year      = {1996},
+  url       = {http://mitpress.mit.edu/sicp/full-text/sicp/book/book.html}
+}
+
+@Book{goldberg-robson:smalltalk-language,
+  author    = "Adele Goldberg and David Robson",
+  title     = "{Smalltalk-80}; The {L}anguage and Its {I}mplementation",
+  publisher = "Addison-Wesley",
+  year      = "1983",
+  note      = "ISBN 0-201-11371-6"
+}
+
+@Book{matsumtoto:ruby,
+  author    = {Yukihiro Matsumoto},
+  title     = {Ruby in a {N}utshell},
+  publisher = {O'Reilly \& Associates},
+  year      = "2001",
+  month     = "nov",
+  note      = "ISBN 0-596-00214-9"
+}
+
+@Book{rossum:python,
+  author    = {Guido van Rossum and Fred L. Drake},
+  title     = {The {P}ython {L}anguage {R}eference {M}anual},
+  publisher = {Network Theory Ltd},
+  year      = "2003",
+  month     = "sep",
+  note      = {ISBN 0-954-16178-5\hspace*{\fill}\\
+                  \verb@http://www.python.org/doc/current/ref/ref.html@}
+}
+
+@Manual{odersky:scala-reference,
+  title =        {The {S}cala {L}anguage {S}pecification, Version 2.4},
+  author =       {Martin Odersky},
+  organization = {EPFL},
+  month =        feb,
+  year =         2007,
+  note =         {http://www.scala-lang.org/docu/manuals.html}
+}
+
+@Book{odersky:scala-reference,
+  ALTauthor =    {Martin Odersky},
+  ALTeditor =    {},
+  title =        {The {S}cala {L}anguage {S}pecification, Version 2.4},
+  publisher =    {},
+  year =         {},
+  OPTkey =       {},
+  OPTvolume =    {},
+  OPTnumber =    {},
+  OPTseries =    {},
+  OPTaddress =   {},
+  OPTedition =   {},
+  OPTmonth =     {},
+  OPTnote =      {},
+  OPTannote =    {}
+}
+
+%% InProceedings
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@InProceedings{odersky-et-al:fool10,
+  author    = {Martin Odersky and Vincent Cremet and Christine R\"ockl
+                  and Matthias Zenger},
+  title     = {A {N}ominal {T}heory of {O}bjects with {D}ependent {T}ypes},
+  booktitle = {Proc. FOOL 10},
+  year      = 2003,
+  month     = jan,
+  note      = {\hspace*{\fill}\\
+                  \verb@http://www.cis.upenn.edu/~bcpierce/FOOL/FOOL10.html@}
+}
+
+%% Misc
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@Misc{w3c:dom,
+  author    = {W3C},
+  title     = {Document Object Model ({DOM})},
+  howpublished  = {\hspace*{\fill}\\
+                  \verb@http://www.w3.org/DOM/@}
+}
+
+@Misc{w3c:xml,
+  author    = {W3C},
+  title     = {Extensible {M}arkup {L}anguage ({XML})},
+  howpublished  = {\hspace*{\fill}\\
+                  \verb@http://www.w3.org/TR/REC-xml@}
+}
+
+@TechReport{scala-overview-tech-report,
+  author =       {Martin Odersky and al.},
+  title =        {An {O}verview of the {S}cala {P}rogramming {L}anguage},
+  institution =  {EPFL Lausanne, Switzerland},
+  year =         2004,
+  number =       {IC/2004/64}
+}
+
+@InProceedings{odersky:sca,
+  author =       {Martin Odersky and Matthias Zenger},
+  title =        {Scalable {C}omponent {A}bstractions},
+  booktitle =    {Proc. OOPSLA},
+  year =         2005
+}
+
+@InProceedings{odersky-et-al:ecoop03,
+  author =       {Martin Odersky and Vincent Cremet and Christine R\"ockl and Matthias Zenger},
+  title =        {A {N}ominal {T}heory of {O}bjects with {D}ependent {T}ypes},
+  booktitle =    {Proc. ECOOP'03},
+  year =         2003,
+  month =        jul,
+  series =       {Springer LNCS}
+}
+
+@InCollection{cremet-odersky:pilib,
+  author =       {Vincent Cremet and Martin Odersky},
+  title =        {PiLib} - A {H}osted {L}anguage for {P}i-{C}alculus {S}tyle {C}oncurrency},
+  booktitle =    {Domain-Specific Program Generation},
+  publisher =    {Springer},
+  year =         2005,
+  volume =       3016,
+  series =       {Lecture Notes in Computer Science}
+}
+
+@InProceedings{odersky-zenger:fool12,
+  author =       {Martin Odersky and Matthias Zenger},
+  title =        {Independently {E}xtensible {S}olutions to the {E}xpression {P}roblem},
+  booktitle =    {Proc. FOOL 12},
+  year =         2005,
+  month =        jan,
+  note =         {\verb@http://homepages.inf.ed.ac.uk/wadler/fool@}
+}
+
+@InProceedings{odersky:scala-experiment,
+  author =       {Martin Odersky},
+  title =        {The {S}cala {E}xperiment - {C}an {W}e {P}rovide {B}etter {L}anguage {S}upport for {C}omponent {S}ystems?},
+  booktitle =    {Proc. ACM Symposium on Principles of Programming Languages},
+  year =         2006
+}
+
+@MISC{kennedy-pierce:decidable,
+  author = {Andrew J. Kennedy and Benjamin C. Pierce},
+  title = {On {D}ecidability of {N}ominal {S}ubtyping with {V}ariance},
+  year = {2007},
+  month = jan,
+  note = {FOOL-WOOD '07},
+  short = {http://www.cis.upenn.edu/~bcpierce/papers/variance.pdf}
+}
+
+-->
+
+  </main>
+
+  <script src="public/scripts/toc.js"></script>
+  <script src="public/scripts/highlight.pack.js"></script>
+  <script src="public/scripts/main.js"></script>
+</body>
+</html>

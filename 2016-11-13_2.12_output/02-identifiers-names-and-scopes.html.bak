@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+
+  <link rel="icon" type="image/png" href="public/favicon.ico">
+  <link rel="shortcut icon" type="image/png" href="public/favicon.ico">
+
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      skipTags: ['script', 'noscript', 'style', 'textarea'],
+      processEscapes: true
+    }
+  });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/2.6-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+  <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.2/styles/default.min.css">
+  <!-- need to use include to see value of page.chapter variable -->
+  <style type="text/css">
+    h1 {
+  /* must reset here */
+  counter-reset: chapter 2;
+}
+h1:before {
+  /* and must reset again here */
+  counter-reset: chapter 2;
+  content: "Chapter " counter(chapter);
+  display: block;
+}
+
+h2 {
+  /* must increment here */
+  counter-increment: section;
+  counter-reset: subsection;
+}
+h2:before {
+  /* and must reset again here */
+  counter-reset: chapter 2;
+
+  content: counter(chapter) "." counter(section) ;
+  display: inline;
+  margin-right: 1em;
+}
+h2:after {
+  /* can only have one counter-reset per tag, so can't do it in h2/h2:before... */
+  counter-reset: example;
+}
+
+h3 {
+  /* must increment here */
+  counter-increment: subsection;
+}
+h3:before {
+  /* and must reset again here */
+  counter-reset: chapter 2;
+
+  content: counter(chapter) "." counter(section) "." counter(subsection);
+  display: inline;
+  margin-right: 1em;
+}
+h3[id*='example'] {
+  /* must increment here */
+  counter-increment: example;
+  display: inline;
+}
+h3[id*='example']:before {
+  /* and must reset again here */
+  counter-reset: chapter 2;
+
+  content: "Example " counter(chapter) "." counter(section) "." counter(example);
+  display: inline;
+  margin-right: 1em;
+}
+
+.no-numbering, .no-numbering:before, .no-numbering:after {
+  content: normal;
+  counter-reset: none;
+  counter-increment: none;
+}
+
+  </style>
+  <link rel="stylesheet" type="text/css" href="public/stylesheets/screen.css">
+  <link rel="stylesheet" type="text/css" media="(max-width: 1400px), (orientation: portrait)" href="public/stylesheets/screen-small.css">
+  <link rel="stylesheet" type="text/css" media="print" href="public/stylesheets/print.css">
+  <link rel="stylesheet" type="text/css" href="public/stylesheets/fonts.css">
+  <title>Identifiers, Names & Scopes</title>
+</head>
+
+<body>
+  <header>
+    <nav id="chapters"><a id="github" href="https://github.com/scala/scala/tree/2.12.x/spec"><img src="public/images/github-logo@2x.png" alt="Edit at GitHub"></a><a href="01-lexical-syntax.html">1 Lexical Syntax</a><a href="02-identifiers-names-and-scopes.html">2 Identifiers, Names & Scopes</a><a href="03-types.html">3 Types</a><a href="04-basic-declarations-and-definitions.html">4 Basic Declarations & Definitions</a><a href="05-classes-and-objects.html">5 Classes & Objects</a><a href="06-expressions.html">6 Expressions</a><a href="07-implicits.html">7 Implicits</a><a href="08-pattern-matching.html">8 Pattern Matching</a><a href="09-top-level-definitions.html">9 Top-Level Definitions</a><a href="10-xml-expressions-and-patterns.html">10 XML</a><a href="11-annotations.html">11 Annotations</a><a href="12-the-scala-standard-library.html">12 Standard Library</a><a href="13-syntax-summary.html">13 Syntax Summary</a><a href="14-references.html">14 References</a><a href="15-changelog.html">15 Changelog</a></nav>
+  </header>
+  <aside class="left"><nav id="toc"></nav></aside>
+
+  <main id="content">
+<h1 id="identifiers-names-and-scopes">Identifiers, Names and Scopes</h1>
+
+<p>Names in Scala identify types, values, methods, and classes which are
+collectively called <em>entities</em>. Names are introduced by local
+<a href="04-basic-declarations-and-definitions.html#basic-declarations-and-definitions">definitions and declarations</a>,
+<a href="05-classes-and-objects.html#class-members">inheritance</a>,
+<a href="04-basic-declarations-and-definitions.html#import-clauses">import clauses</a>, or
+<a href="09-top-level-definitions.html#packagings">package clauses</a>
+which are collectively called <em>bindings</em>.</p>
+
+<p>Bindings of different kinds have a precedence defined on them:</p>
+
+<ol>
+<li>Definitions and declarations that are local, inherited, or made
+available by a package clause and also defined in the same compilation unit
+as the reference, have highest precedence.</li>
+<li>Explicit imports have next highest precedence.</li>
+<li>Wildcard imports  have next highest precedence.</li>
+<li>Definitions made available by a package clause, but not also defined in the
+same compilation unit as the reference, have lowest precedence.</li>
+</ol>
+
+<p>There are two different name spaces, one for <a href="03-types.html#types">types</a>
+and one for <a href="06-expressions.html#expressions">terms</a>. The same name may designate a
+type and a term, depending on the context where the name is used.</p>
+
+<p>A binding has a <em>scope</em> in which the entity defined by a single
+name can be accessed using a simple name. Scopes are nested.  A binding
+in some inner scope <em>shadows</em> bindings of lower precedence in the
+same scope as well as bindings of the same or lower precedence in outer
+scopes.</p>
+
+<p>Note that shadowing is only a partial order. In the following example,
+neither binding of <code>x</code> shadows the other. Consequently, the
+reference to <code>x</code> in the last line of the block is ambiguous.</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">val x = 1
+locally {
+  import p.X.x
+  x
+}
+</code></pre></div>
+<p>A reference to an unqualified (type- or term-) identifier $x$ is bound
+by the unique binding, which</p>
+
+<ul>
+<li>defines an entity with name $x$ in the same namespace as the identifier, and</li>
+<li>shadows all other bindings that define entities with name $x$ in that
+namespace.</li>
+</ul>
+
+<p>It is an error if no such binding exists.  If $x$ is bound by an
+import clause, then the simple name $x$ is taken to be equivalent to
+the qualified name to which $x$ is mapped by the import clause. If $x$
+is bound by a definition or declaration, then $x$ refers to the entity
+introduced by that binding. In that case, the type of $x$ is the type
+of the referenced entity.</p>
+
+<p>A reference to a qualified (type- or term-) identifier $e.x$ refers to
+the member of the type $T$ of $e$ which has the name $x$ in the same
+namespace as the identifier. It is an error if $T$ is not a <a href="03-types.html#value-types">value type</a>.
+The type of $e.x$ is the member type of the referenced entity in $T$.</p>
+
+<p>Binding precedence implies that the way source is bundled in files affects name resolution.
+In particular, imported names have higher precedence than names, defined in other files,
+that might otherwise be visible because they are defined in
+either the current package or an enclosing package.</p>
+
+<p>Note that a package definition is taken as lowest precedence, since packages
+are open and can be defined across arbitrary compilation units.</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">package util {
+  import scala.util
+  class Random
+  object Test extends App {
+    println(new util.Random)  // scala.util.Random
+  }
+}
+</code></pre></div>
+<h6 id="example">Example</h6>
+
+<p>Assume the following two definitions of objects named <code>X</code> in packages <code>p</code> and <code>q</code>
+in separate compilation units.</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">package p {
+  object X { val x = 1; val y = 2 }
+}
+
+package q {
+  object X { val x = true; val y = false }
+}
+</code></pre></div>
+<p>The following program illustrates different kinds of bindings and
+precedences between them.</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">package p {                   // `X&#39; bound by package clause
+import Console._              // `println&#39; bound by wildcard import
+object Y {
+  println(s&quot;L4: $X&quot;)          // `X&#39; refers to `p.X&#39; here
+  locally {
+    import q._                // `X&#39; bound by wildcard import
+    println(s&quot;L7: $X&quot;)        // `X&#39; refers to `q.X&#39; here
+    import X._                // `x&#39; and `y&#39; bound by wildcard import
+    println(s&quot;L9: $x&quot;)        // `x&#39; refers to `q.X.x&#39; here
+    locally {
+      val x = 3               // `x&#39; bound by local definition
+      println(s&quot;L12: $x&quot;)     // `x&#39; refers to constant `3&#39; here
+      locally {
+        import q.X._          // `x&#39; and `y&#39; bound by wildcard import
+//      println(s&quot;L15: $x&quot;)   // reference to `x&#39; is ambiguous here
+        import X.y            // `y&#39; bound by explicit import
+        println(s&quot;L17: $y&quot;)   // `y&#39; refers to `q.X.y&#39; here
+        locally {
+          val x = &quot;abc&quot;       // `x&#39; bound by local definition
+          import p.X._        // `x&#39; and `y&#39; bound by wildcard import
+//        println(s&quot;L21: $y&quot;) // reference to `y&#39; is ambiguous here
+          println(s&quot;L22: $x&quot;) // `x&#39; refers to string &quot;abc&quot; here
+}}}}}}
+</code></pre></div>
+  </main>
+
+  <script src="public/scripts/toc.js"></script>
+  <script src="public/scripts/highlight.pack.js"></script>
+  <script src="public/scripts/main.js"></script>
+</body>
+</html>

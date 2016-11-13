@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+
+  <link rel="icon" type="image/png" href="public/favicon.ico">
+  <link rel="shortcut icon" type="image/png" href="public/favicon.ico">
+
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      skipTags: ['script', 'noscript', 'style', 'textarea'],
+      processEscapes: true
+    }
+  });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/2.6-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+  <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.2/styles/default.min.css">
+  <!-- need to use include to see value of page.chapter variable -->
+  <style type="text/css">
+    h1 {
+  /* must reset here */
+  counter-reset: chapter 13;
+}
+h1:before {
+  /* and must reset again here */
+  counter-reset: chapter 13;
+  content: "Chapter " counter(chapter);
+  display: block;
+}
+
+h2 {
+  /* must increment here */
+  counter-increment: section;
+  counter-reset: subsection;
+}
+h2:before {
+  /* and must reset again here */
+  counter-reset: chapter 13;
+
+  content: counter(chapter) "." counter(section) ;
+  display: inline;
+  margin-right: 1em;
+}
+h2:after {
+  /* can only have one counter-reset per tag, so can't do it in h2/h2:before... */
+  counter-reset: example;
+}
+
+h3 {
+  /* must increment here */
+  counter-increment: subsection;
+}
+h3:before {
+  /* and must reset again here */
+  counter-reset: chapter 13;
+
+  content: counter(chapter) "." counter(section) "." counter(subsection);
+  display: inline;
+  margin-right: 1em;
+}
+h3[id*='example'] {
+  /* must increment here */
+  counter-increment: example;
+  display: inline;
+}
+h3[id*='example']:before {
+  /* and must reset again here */
+  counter-reset: chapter 13;
+
+  content: "Example " counter(chapter) "." counter(section) "." counter(example);
+  display: inline;
+  margin-right: 1em;
+}
+
+.no-numbering, .no-numbering:before, .no-numbering:after {
+  content: normal;
+  counter-reset: none;
+  counter-increment: none;
+}
+
+  </style>
+  <link rel="stylesheet" type="text/css" href="public/stylesheets/screen.css">
+  <link rel="stylesheet" type="text/css" media="(max-width: 1400px), (orientation: portrait)" href="public/stylesheets/screen-small.css">
+  <link rel="stylesheet" type="text/css" media="print" href="public/stylesheets/print.css">
+  <link rel="stylesheet" type="text/css" href="public/stylesheets/fonts.css">
+  <title>Syntax Summary</title>
+</head>
+
+<body>
+  <header>
+    <nav id="chapters"><a id="github" href="https://github.com/scala/scala/tree/2.12.x/spec"><img src="public/images/github-logo@2x.png" alt="Edit at GitHub"></a><a href="01-lexical-syntax.html">1 Lexical Syntax</a><a href="02-identifiers-names-and-scopes.html">2 Identifiers, Names & Scopes</a><a href="03-types.html">3 Types</a><a href="04-basic-declarations-and-definitions.html">4 Basic Declarations & Definitions</a><a href="05-classes-and-objects.html">5 Classes & Objects</a><a href="06-expressions.html">6 Expressions</a><a href="07-implicits.html">7 Implicits</a><a href="08-pattern-matching.html">8 Pattern Matching</a><a href="09-top-level-definitions.html">9 Top-Level Definitions</a><a href="10-xml-expressions-and-patterns.html">10 XML</a><a href="11-annotations.html">11 Annotations</a><a href="12-the-scala-standard-library.html">12 Standard Library</a><a href="13-syntax-summary.html">13 Syntax Summary</a><a href="14-references.html">14 References</a><a href="15-changelog.html">15 Changelog</a></nav>
+  </header>
+  <aside class="left"><nav id="toc"></nav></aside>
+
+  <main id="content">
+<h1 id="syntax-summary">Syntax Summary</h1>
+
+<p>The following descriptions of Scala tokens uses literal characters <code>‘c’</code> when referring to the ASCII fragment <code>\u0000</code> – <code>\u007F</code>.</p>
+
+<p><em>Unicode escapes</em> are used to represent the Unicode character with the given hexadecimal code:</p>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="UnicodeEscape"></a>UnicodeEscape ::= ‘\’ ‘u’ {‘u’} <t>hexDigit</t> <t>hexDigit</t> <t>hexDigit</t> <t>hexDigit</t>
+<a name="hexDigit"></a>hexDigit      ::= ‘0’ | … | ‘9’ | ‘A’ | … | ‘F’ | ‘a’ | … | ‘f’
+</code></pre></div>
+<h2 id="lexical-syntax">Lexical Syntax</h2>
+
+<p>The lexical syntax of Scala is given by the following grammar in EBNF form:</p>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="whiteSpace"></a>whiteSpace       ::=  ‘\u0020’ | ‘\u0009’ | ‘\u000D’ | ‘\u000A’
+<a name="upper"></a>upper            ::=  ‘A’ | … | ‘Z’ | ‘\$’ | ‘_’  // and Unicode category Lu
+<a name="lower"></a>lower            ::=  ‘a’ | … | ‘z’ // and Unicode category Ll
+<a name="letter"></a>letter           ::=  <t>upper</t> | <t>lower</t> // and Unicode categories Lo, Lt, Nl
+<a name="digit"></a>digit            ::=  ‘0’ | … | ‘9’
+<a name="paren"></a>paren            ::=  ‘(’ | ‘)’ | ‘[’ | ‘]’ | ‘{’ | ‘}’
+<a name="delim"></a>delim            ::=  ‘`’ | ‘&#39;’ | ‘&quot;’ | ‘.’ | ‘;’ | ‘,’
+<a name="opchar"></a>opchar           ::= // printableChar not matched by (whiteSpace | upper | lower |
+                     // letter | digit | paren | delim | opchar | Unicode_Sm | Unicode_So)
+<a name="printableChar"></a>printableChar    ::= // all characters in [\u0020, \u007F] inclusive
+<a name="charEscapeSeq"></a>charEscapeSeq    ::= ‘\’ (‘b’ | ‘t’ | ‘n’ | ‘f’ | ‘r’ | ‘&quot;’ | ‘&#39;’ | ‘\’)
+
+<a name="op"></a>op               ::=  <t>opchar</t> {<t>opchar</t>}
+<a name="varid"></a>varid            ::=  <t>lower</t> <t>idrest</t>
+<a name="plainid"></a>plainid          ::=  <t>upper</t> <t>idrest</t>
+                 |  <t>varid</t>
+                 |  <t>op</t>
+<a name="id"></a>id               ::=  <t>plainid</t>
+                 |  ‘`’ <t>stringLiteral</t> ‘`’
+<a name="idrest"></a>idrest           ::=  {<t>letter</t> | <t>digit</t>} [‘_’ <t>op</t>]
+
+<a name="integerLiteral"></a>integerLiteral   ::=  (<t>decimalNumeral</t> | <t>hexNumeral</t>) [‘L’ | ‘l’]
+<a name="decimalNumeral"></a>decimalNumeral   ::=  ‘0’ | <t>nonZeroDigit</t> {<t>digit</t>}
+<a name="hexNumeral"></a>hexNumeral       ::=  ‘0’ (‘x’ | ‘X’) <t>hexDigit</t> {<t>hexDigit</t>}
+<a name="digit"></a>digit            ::=  ‘0’ | <t>nonZeroDigit</t>
+<a name="nonZeroDigit"></a>nonZeroDigit     ::=  ‘1’ | … | ‘9’
+
+<a name="floatingPointLiteral"></a>floatingPointLiteral
+                 ::=  <t>digit</t> {<t>digit</t>} ‘.’ <t>digit</t> {<t>digit</t>} [<t>exponentPart</t>] [<t>floatType</t>]
+                 |  ‘.’ <t>digit</t> {<t>digit</t>} [<t>exponentPart</t>] [<t>floatType</t>]
+                 |  <t>digit</t> {<t>digit</t>} <t>exponentPart</t> [<t>floatType</t>]
+                 |  <t>digit</t> {<t>digit</t>} [<t>exponentPart</t>] <t>floatType</t>
+<a name="exponentPart"></a>exponentPart     ::=  (‘E’ | ‘e’) [‘+’ | ‘-’] <t>digit</t> {<t>digit</t>}
+<a name="floatType"></a>floatType        ::=  ‘F’ | ‘f’ | ‘D’ | ‘d’
+
+<a name="booleanLiteral"></a>booleanLiteral   ::=  ‘true’ | ‘false’
+
+<a name="characterLiteral"></a>characterLiteral ::=  ‘&#39;’ (<t>charNoQuoteOrNewline</t> | <t>UnicodeEscape</t> | <t>charEscapeSeq</t>) ‘&#39;’
+
+<a name="stringLiteral"></a>stringLiteral    ::=  ‘&quot;’ {<t>stringElement</t>} ‘&quot;’
+                 |  ‘&<t>quot</t>;&<t>quot</t>;&quot;’ <t>multiLineChars</t> ‘&<t>quot</t>;&<t>quot</t>;&quot;’
+<a name="stringElement"></a>stringElement    ::=  <t>charNoDoubleQuoteOrNewline</t>
+                 |  <t>UnicodeEscape</t>
+                 |  <t>charEscapeSeq</t>
+<a name="multiLineChars"></a>multiLineChars   ::=  {[‘&quot;’] [‘&quot;’] <t>charNoDoubleQuote</t>} {‘&quot;’}
+
+<a name="symbolLiteral"></a>symbolLiteral    ::=  ‘&#39;’ <t>plainid</t>
+
+<a name="comment"></a>comment          ::=  ‘/*’ “<t>any</t> <t>sequence</t> <t>of</t> <t>characters</t>; <t>nested</t> <t>comments</t> <t>are</t> <t>allowed</t>” ‘*/’
+                 |  ‘//’ “any sequence of characters up to end of line”
+
+<a name="nl"></a>nl               ::=  $\<t>mathit</t>{“<t>new</t> <t>line</t> <t>character</t>”}$
+<a name="semi"></a>semi             ::=  ‘;’ |  <t>nl</t> {<t>nl</t>}
+</code></pre></div>
+<h2 id="context-free-syntax">Context-free Syntax</h2>
+
+<p>The context-free syntax of Scala is given by the following EBNF
+grammar:</p>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf">  <a name="Literal"></a>Literal           ::=  [‘-’] <t>integerLiteral</t>
+                      |  [‘-’] <t>floatingPointLiteral</t>
+                      |  <t>booleanLiteral</t>
+                      |  <t>characterLiteral</t>
+                      |  <t>stringLiteral</t>
+                      |  <t>symbolLiteral</t>
+                      |  ‘null’
+
+  <a name="QualId"></a>QualId            ::=  <t>id</t> {‘.’ <t>id</t>}
+  <a name="ids"></a>ids               ::=  <t>id</t> {‘,’ <t>id</t>}
+
+  <a name="Path"></a>Path              ::=  <t>StableId</t>
+                      |  [<t>id</t> ‘.’] ‘this’
+  <a name="StableId"></a>StableId          ::=  <t>id</t>
+                      |  <t>Path</t> ‘.’ <t>id</t>
+                      |  [<t>id</t> ‘.’] ‘super’ [<t>ClassQualifier</t>] ‘.’ <t>id</t>
+  <a name="ClassQualifier"></a>ClassQualifier    ::=  ‘[’ <t>id</t> ‘]’
+
+  <a name="Type"></a>Type              ::=  <t>FunctionArgTypes</t> ‘=&gt;’ <t>Type</t>
+                      |  <t>InfixType</t> [<t>ExistentialClause</t>]
+  <a name="FunctionArgTypes"></a>FunctionArgTypes  ::= <t>InfixType</t>
+                      | ‘(’ [ <t>ParamType</t> {‘,’ <t>ParamType</t> } ] ‘)’
+  <a name="ExistentialClause"></a>ExistentialClause ::=  ‘forSome’ ‘{’ <t>ExistentialDcl</t> {<t>semi</t> <t>ExistentialDcl</t>} ‘}’
+  <a name="ExistentialDcl"></a>ExistentialDcl    ::=  ‘type’ <t>TypeDcl</t>
+                      |  ‘val’ <t>ValDcl</t>
+  <a name="InfixType"></a>InfixType         ::=  <t>CompoundType</t> {<t>id</t> [<t>nl</t>] <t>CompoundType</t>}
+  <a name="CompoundType"></a>CompoundType      ::=  <t>AnnotType</t> {‘with’ <t>AnnotType</t>} [<t>Refinement</t>]
+                      |  <t>Refinement</t>
+  <a name="AnnotType"></a>AnnotType         ::=  <t>SimpleType</t> {<t>Annotation</t>}
+  <a name="SimpleType"></a>SimpleType        ::=  <t>SimpleType</t> <t>TypeArgs</t>
+                      |  <t>SimpleType</t> ‘#’ <t>id</t>
+                      |  <t>StableId</t>
+                      |  <t>Path</t> ‘.’ ‘type’
+                      |  ‘(’ <t>Types</t> ‘)’
+  <a name="TypeArgs"></a>TypeArgs          ::=  ‘[’ <t>Types</t> ‘]’
+  <a name="Types"></a>Types             ::=  <t>Type</t> {‘,’ <t>Type</t>}
+  <a name="Refinement"></a>Refinement        ::=  [<t>nl</t>] ‘{’ <t>RefineStat</t> {<t>semi</t> <t>RefineStat</t>} ‘}’
+  <a name="RefineStat"></a>RefineStat        ::=  <t>Dcl</t>
+                      |  ‘type’ <t>TypeDef</t>
+                      |
+  <a name="TypePat"></a>TypePat           ::=  <t>Type</t>
+
+  <a name="Ascription"></a>Ascription        ::=  ‘:’ <t>InfixType</t>
+                      |  ‘:’ <t>Annotation</t> {<t>Annotation</t>}
+                      |  ‘:’ ‘_’ ‘*’
+
+  <a name="Expr"></a>Expr              ::=  (<t>Bindings</t> | [‘implicit’] <t>id</t> | ‘_’) ‘=&gt;’ <t>Expr</t>
+                      |  <t>Expr1</t>
+  <a name="Expr1"></a>Expr1             ::=  ‘if’ ‘(’ <t>Expr</t> ‘)’ {<t>nl</t>} <t>Expr</t> [[<t>semi</t>] ‘else’ <t>Expr</t>]
+                      |  ‘while’ ‘(’ <t>Expr</t> ‘)’ {<t>nl</t>} <t>Expr</t>
+                      |  ‘try’ (‘{’ <t>Block</t> ‘}’ | <t>Expr</t>) [‘catch’ ‘{’ <t>CaseClauses</t> ‘}’] [‘finally’ <t>Expr</t>]
+                      |  ‘do’ <t>Expr</t> [<t>semi</t>] ‘while’ ‘(’ <t>Expr</t> ‘)’
+                      |  ‘for’ (‘(’ <t>Enumerators</t> ‘)’ | ‘{’ <t>Enumerators</t> ‘}’) {<t>nl</t>} [‘yield’] <t>Expr</t>
+                      |  ‘throw’ <t>Expr</t>
+                      |  ‘return’ [<t>Expr</t>]
+                      |  [<t>SimpleExpr</t> ‘.’] <t>id</t> ‘=’ <t>Expr</t>
+                      |  <t>SimpleExpr1</t> <t>ArgumentExprs</t> ‘=’ <t>Expr</t>
+                      |  <t>PostfixExpr</t>
+                      |  <t>PostfixExpr</t> <t>Ascription</t>
+                      |  <t>PostfixExpr</t> ‘match’ ‘{’ <t>CaseClauses</t> ‘}’
+  <a name="PostfixExpr"></a>PostfixExpr       ::=  <t>InfixExpr</t> [<t>id</t> [<t>nl</t>]]
+  <a name="InfixExpr"></a>InfixExpr         ::=  <t>PrefixExpr</t>
+                      |  <t>InfixExpr</t> <t>id</t> [<t>nl</t>] <t>InfixExpr</t>
+  <a name="PrefixExpr"></a>PrefixExpr        ::=  [‘-’ | ‘+’ | ‘~’ | ‘!’] <t>SimpleExpr</t>
+  <a name="SimpleExpr"></a>SimpleExpr        ::=  ‘new’ (<t>ClassTemplate</t> | <t>TemplateBody</t>)
+                      |  <t>BlockExpr</t>
+                      |  <t>SimpleExpr1</t> [‘_’]
+  <a name="SimpleExpr1"></a>SimpleExpr1       ::=  <t>Literal</t>
+                      |  <t>Path</t>
+                      |  ‘_’
+                      |  ‘(’ [<t>Exprs</t>] ‘)’
+                      |  <t>SimpleExpr</t> ‘.’ <t>id</t>
+                      |  <t>SimpleExpr</t> <t>TypeArgs</t>
+                      |  <t>SimpleExpr1</t> <t>ArgumentExprs</t>
+                      |  <t>XmlExpr</t>
+  <a name="Exprs"></a>Exprs             ::=  <t>Expr</t> {‘,’ <t>Expr</t>}
+  <a name="ArgumentExprs"></a>ArgumentExprs     ::=  ‘(’ [<t>Exprs</t>] ‘)’
+                      |  ‘(’ [<t>Exprs</t> ‘,’] <t>PostfixExpr</t> ‘:’ ‘_’ ‘*’ ‘)’
+                      |  [<t>nl</t>] <t>BlockExpr</t>
+  <a name="BlockExpr"></a>BlockExpr         ::=  ‘{’ <t>CaseClauses</t> ‘}’
+                      |  ‘{’ <t>Block</t> ‘}’
+  <a name="Block"></a>Block             ::=  <t>BlockStat</t> {<t>semi</t> <t>BlockStat</t>} [<t>ResultExpr</t>]
+  <a name="BlockStat"></a>BlockStat         ::=  <t>Import</t>
+                      |  {<t>Annotation</t>} [‘implicit’ | ‘lazy’] <t>Def</t>
+                      |  {<t>Annotation</t>} {<t>LocalModifier</t>} <t>TmplDef</t>
+                      |  <t>Expr1</t>
+                      |
+  <a name="ResultExpr"></a>ResultExpr        ::=  <t>Expr1</t>
+                      |  (<t>Bindings</t> | ([‘implicit’] <t>id</t> | ‘_’) ‘:’ <t>CompoundType</t>) ‘=&gt;’ <t>Block</t>
+
+  <a name="Enumerators"></a>Enumerators       ::=  <t>Generator</t> {<t>semi</t> <t>Generator</t>}
+  <a name="Generator"></a>Generator         ::=  <t>Pattern1</t> ‘&lt;-’ <t>Expr</t> {[<t>semi</t>] <t>Guard</t> | <t>semi</t> <t>Pattern1</t> ‘=’ <t>Expr</t>}
+
+  <a name="CaseClauses"></a>CaseClauses       ::=  <t>CaseClause</t> { <t>CaseClause</t> }
+  <a name="CaseClause"></a>CaseClause        ::=  ‘case’ <t>Pattern</t> [<t>Guard</t>] ‘=&gt;’ <t>Block</t>
+  <a name="Guard"></a>Guard             ::=  ‘if’ <t>PostfixExpr</t>
+
+  <a name="Pattern"></a>Pattern           ::=  <t>Pattern1</t> { ‘|’ <t>Pattern1</t> }
+  <a name="Pattern1"></a>Pattern1          ::=  <t>varid</t> ‘:’ <t>TypePat</t>
+                      |  ‘_’ ‘:’ <t>TypePat</t>
+                      |  <t>Pattern2</t>
+  <a name="Pattern2"></a>Pattern2          ::=  <t>varid</t> [‘@’ <t>Pattern3</t>]
+                      |  <t>Pattern3</t>
+  <a name="Pattern3"></a>Pattern3          ::=  <t>SimplePattern</t>
+                      |  <t>SimplePattern</t> { <t>id</t> [<t>nl</t>] <t>SimplePattern</t> }
+  <a name="SimplePattern"></a>SimplePattern     ::=  ‘_’
+                      |  <t>varid</t>
+                      |  <t>Literal</t>
+                      |  <t>StableId</t>
+                      |  <t>StableId</t> ‘(’ [<t>Patterns</t>] ‘)’
+                      |  <t>StableId</t> ‘(’ [<t>Patterns</t> ‘,’] [<t>varid</t> ‘@’] ‘_’ ‘*’ ‘)’
+                      |  ‘(’ [<t>Patterns</t>] ‘)’
+                      |  <t>XmlPattern</t>
+  <a name="Patterns"></a>Patterns          ::=  <t>Pattern</t> [‘,’ <t>Patterns</t>]
+                      |  ‘_’ ‘*’
+
+  <a name="TypeParamClause"></a>TypeParamClause   ::=  ‘[’ <t>VariantTypeParam</t> {‘,’ <t>VariantTypeParam</t>} ‘]’
+  <a name="FunTypeParamClause"></a>FunTypeParamClause::=  ‘[’ <t>TypeParam</t> {‘,’ <t>TypeParam</t>} ‘]’
+  <a name="VariantTypeParam"></a>VariantTypeParam  ::=  {<t>Annotation</t>} [‘+’ | ‘-’] <t>TypeParam</t>
+  <a name="TypeParam"></a>TypeParam         ::=  (<t>id</t> | ‘_’) [<t>TypeParamClause</t>] [‘&gt;:’ <t>Type</t>] [‘&lt;:’ <t>Type</t>]
+                         {‘&lt;%’ <t>Type</t>} {‘:’ <t>Type</t>}
+  <a name="ParamClauses"></a>ParamClauses      ::=  {<t>ParamClause</t>} [[<t>nl</t>] ‘(’ ‘implicit’ <t>Params</t> ‘)’]
+  <a name="ParamClause"></a>ParamClause       ::=  [<t>nl</t>] ‘(’ [<t>Params</t>] ‘)’
+  <a name="Params"></a>Params            ::=  <t>Param</t> {‘,’ <t>Param</t>}
+  <a name="Param"></a>Param             ::=  {<t>Annotation</t>} <t>id</t> [‘:’ <t>ParamType</t>] [‘=’ <t>Expr</t>]
+  <a name="ParamType"></a>ParamType         ::=  <t>Type</t>
+                      |  ‘=&gt;’ <t>Type</t>
+                      |  <t>Type</t> ‘*’
+  <a name="ClassParamClauses"></a>ClassParamClauses ::=  {<t>ClassParamClause</t>}
+                         [[<t>nl</t>] ‘(’ ‘implicit’ <t>ClassParams</t> ‘)’]
+  <a name="ClassParamClause"></a>ClassParamClause  ::=  [<t>nl</t>] ‘(’ [<t>ClassParams</t>] ‘)’
+  <a name="ClassParams"></a>ClassParams       ::=  <t>ClassParam</t> {‘,’ <t>ClassParam</t>}
+  <a name="ClassParam"></a>ClassParam        ::=  {<t>Annotation</t>} {<t>Modifier</t>} [(‘val’ | ‘var’)]
+                         <t>id</t> ‘:’ <t>ParamType</t> [‘=’ <t>Expr</t>]
+  <a name="Bindings"></a>Bindings          ::=  ‘(’ <t>Binding</t> {‘,’ <t>Binding</t>} ‘)’
+  <a name="Binding"></a>Binding           ::=  (<t>id</t> | ‘_’) [‘:’ <t>Type</t>]
+
+  <a name="Modifier"></a>Modifier          ::=  <t>LocalModifier</t>
+                      |  <t>AccessModifier</t>
+                      |  ‘override’
+  <a name="LocalModifier"></a>LocalModifier     ::=  ‘abstract’
+                      |  ‘final’
+                      |  ‘sealed’
+                      |  ‘implicit’
+                      |  ‘lazy’
+  <a name="AccessModifier"></a>AccessModifier    ::=  (‘private’ | ‘protected’) [<t>AccessQualifier</t>]
+  <a name="AccessQualifier"></a>AccessQualifier   ::=  ‘[’ (<t>id</t> | ‘this’) ‘]’
+
+  <a name="Annotation"></a>Annotation        ::=  ‘@’ <t>SimpleType</t> {<t>ArgumentExprs</t>}
+  <a name="ConstrAnnotation"></a>ConstrAnnotation  ::=  ‘@’ <t>SimpleType</t> <t>ArgumentExprs</t>
+
+  <a name="TemplateBody"></a>TemplateBody      ::=  [<t>nl</t>] ‘{’ [<t>SelfType</t>] <t>TemplateStat</t> {<t>semi</t> <t>TemplateStat</t>} ‘}’
+  <a name="TemplateStat"></a>TemplateStat      ::=  <t>Import</t>
+                      |  {<t>Annotation</t> [<t>nl</t>]} {<t>Modifier</t>} <t>Def</t>
+                      |  {<t>Annotation</t> [<t>nl</t>]} {<t>Modifier</t>} <t>Dcl</t>
+                      |  <t>Expr</t>
+                      |
+  <a name="SelfType"></a>SelfType          ::=  <t>id</t> [‘:’ <t>Type</t>] ‘=&gt;’
+                      |  ‘this’ ‘:’ <t>Type</t> ‘=&gt;’
+
+  <a name="Import"></a>Import            ::=  ‘import’ <t>ImportExpr</t> {‘,’ <t>ImportExpr</t>}
+  <a name="ImportExpr"></a>ImportExpr        ::=  <t>StableId</t> ‘.’ (<t>id</t> | ‘_’ | <t>ImportSelectors</t>)
+  <a name="ImportSelectors"></a>ImportSelectors   ::=  ‘{’ {<t>ImportSelector</t> ‘,’} (<t>ImportSelector</t> | ‘_’) ‘}’
+  <a name="ImportSelector"></a>ImportSelector    ::=  <t>id</t> [‘=&gt;’ <t>id</t> | ‘=&gt;’ ‘_’]
+
+  <a name="Dcl"></a>Dcl               ::=  ‘val’ <t>ValDcl</t>
+                      |  ‘var’ <t>VarDcl</t>
+                      |  ‘def’ <t>FunDcl</t>
+                      |  ‘type’ {<t>nl</t>} <t>TypeDcl</t>
+
+  <a name="ValDcl"></a>ValDcl            ::=  <t>ids</t> ‘:’ <t>Type</t>
+  <a name="VarDcl"></a>VarDcl            ::=  <t>ids</t> ‘:’ <t>Type</t>
+  <a name="FunDcl"></a>FunDcl            ::=  <t>FunSig</t> [‘:’ <t>Type</t>]
+  <a name="FunSig"></a>FunSig            ::=  <t>id</t> [<t>FunTypeParamClause</t>] <t>ParamClauses</t>
+  <a name="TypeDcl"></a>TypeDcl           ::=  <t>id</t> [<t>TypeParamClause</t>] [‘&gt;:’ <t>Type</t>] [‘&lt;:’ <t>Type</t>]
+
+  <a name="PatVarDef"></a>PatVarDef         ::=  ‘val’ <t>PatDef</t>
+                      |  ‘var’ <t>VarDef</t>
+  <a name="Def"></a>Def               ::=  <t>PatVarDef</t>
+                      |  ‘def’ <t>FunDef</t>
+                      |  ‘type’ {<t>nl</t>} <t>TypeDef</t>
+                      |  <t>TmplDef</t>
+  <a name="PatDef"></a>PatDef            ::=  <t>Pattern2</t> {‘,’ <t>Pattern2</t>} [‘:’ <t>Type</t>] ‘=’ <t>Expr</t>
+  <a name="VarDef"></a>VarDef            ::=  <t>PatDef</t>
+                      |  <t>ids</t> ‘:’ <t>Type</t> ‘=’ ‘_’
+  <a name="FunDef"></a>FunDef            ::=  <t>FunSig</t> [‘:’ <t>Type</t>] ‘=’ <t>Expr</t>
+                      |  <t>FunSig</t> [<t>nl</t>] ‘{’ <t>Block</t> ‘}’
+                      |  ‘this’ <t>ParamClause</t> <t>ParamClauses</t>
+                         (‘=’ <t>ConstrExpr</t> | [<t>nl</t>] <t>ConstrBlock</t>)
+  <a name="TypeDef"></a>TypeDef           ::=  <t>id</t> [<t>TypeParamClause</t>] ‘=’ <t>Type</t>
+
+  <a name="TmplDef"></a>TmplDef           ::=  [‘case’] ‘class’ <t>ClassDef</t>
+                      |  [‘case’] ‘object’ <t>ObjectDef</t>
+                      |  ‘trait’ <t>TraitDef</t>
+  <a name="ClassDef"></a>ClassDef          ::=  <t>id</t> [<t>TypeParamClause</t>] {<t>ConstrAnnotation</t>} [<t>AccessModifier</t>]
+                         <t>ClassParamClauses</t> <t>ClassTemplateOpt</t>
+  <a name="TraitDef"></a>TraitDef          ::=  <t>id</t> [<t>TypeParamClause</t>] <t>TraitTemplateOpt</t>
+  <a name="ObjectDef"></a>ObjectDef         ::=  <t>id</t> <t>ClassTemplateOpt</t>
+  <a name="ClassTemplateOpt"></a>ClassTemplateOpt  ::=  ‘extends’ <t>ClassTemplate</t> | [[‘extends’] <t>TemplateBody</t>]
+  <a name="TraitTemplateOpt"></a>TraitTemplateOpt  ::=  ‘extends’ <t>TraitTemplate</t> | [[‘extends’] <t>TemplateBody</t>]
+  <a name="ClassTemplate"></a>ClassTemplate     ::=  [<t>EarlyDefs</t>] <t>ClassParents</t> [<t>TemplateBody</t>]
+  <a name="TraitTemplate"></a>TraitTemplate     ::=  [<t>EarlyDefs</t>] <t>TraitParents</t> [<t>TemplateBody</t>]
+  <a name="ClassParents"></a>ClassParents      ::=  <t>Constr</t> {‘with’ <t>AnnotType</t>}
+  <a name="TraitParents"></a>TraitParents      ::=  <t>AnnotType</t> {‘with’ <t>AnnotType</t>}
+  <a name="Constr"></a>Constr            ::=  <t>AnnotType</t> {<t>ArgumentExprs</t>}
+  <a name="EarlyDefs"></a>EarlyDefs         ::= ‘{’ [<t>EarlyDef</t> {<t>semi</t> <t>EarlyDef</t>}] ‘}’ ‘with’
+  <a name="EarlyDef"></a>EarlyDef          ::=  {<t>Annotation</t> [<t>nl</t>]} {<t>Modifier</t>} <t>PatVarDef</t>
+
+  <a name="ConstrExpr"></a>ConstrExpr        ::=  <t>SelfInvocation</t>
+                      |  <t>ConstrBlock</t>
+  <a name="ConstrBlock"></a>ConstrBlock       ::=  ‘{’ <t>SelfInvocation</t> {<t>semi</t> <t>BlockStat</t>} ‘}’
+  <a name="SelfInvocation"></a>SelfInvocation    ::=  ‘this’ <t>ArgumentExprs</t> {<t>ArgumentExprs</t>}
+
+  <a name="TopStatSeq"></a>TopStatSeq        ::=  <t>TopStat</t> {<t>semi</t> <t>TopStat</t>}
+  <a name="TopStat"></a>TopStat           ::=  {<t>Annotation</t> [<t>nl</t>]} {<t>Modifier</t>} <t>TmplDef</t>
+                      |  <t>Import</t>
+                      |  <t>Packaging</t>
+                      |  <t>PackageObject</t>
+                      |
+  <a name="Packaging"></a>Packaging         ::=  ‘package’ <t>QualId</t> [<t>nl</t>] ‘{’ <t>TopStatSeq</t> ‘}’
+  <a name="PackageObject"></a>PackageObject     ::=  ‘package’ ‘object’ <t>ObjectDef</t>
+
+  <a name="CompilationUnit"></a>CompilationUnit   ::=  {‘package’ <t>QualId</t> <t>semi</t>} <t>TopStatSeq</t>
+</code></pre></div>
+<!-- TODO add:
+SeqPattern ::= ...
+
+SimplePattern    ::= StableId  [TypePatArgs] [‘(’ [SeqPatterns] ‘)’]
+TypePatArgs ::= ‘[’ TypePatArg {‘,’ TypePatArg} ‘]’
+TypePatArg    ::=  ‘_’ |   varid}
+
+-->
+
+  </main>
+
+  <script src="public/scripts/toc.js"></script>
+  <script src="public/scripts/highlight.pack.js"></script>
+  <script src="public/scripts/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+
+  <link rel="icon" type="image/png" href="public/favicon.ico">
+  <link rel="shortcut icon" type="image/png" href="public/favicon.ico">
+
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      skipTags: ['script', 'noscript', 'style', 'textarea'],
+      processEscapes: true
+    }
+  });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/2.6-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+  <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.2/styles/default.min.css">
+  <!-- need to use include to see value of page.chapter variable -->
+  <style type="text/css">
+    h1 {
+  /* must reset here */
+  counter-reset: chapter 7;
+}
+h1:before {
+  /* and must reset again here */
+  counter-reset: chapter 7;
+  content: "Chapter " counter(chapter);
+  display: block;
+}
+
+h2 {
+  /* must increment here */
+  counter-increment: section;
+  counter-reset: subsection;
+}
+h2:before {
+  /* and must reset again here */
+  counter-reset: chapter 7;
+
+  content: counter(chapter) "." counter(section) ;
+  display: inline;
+  margin-right: 1em;
+}
+h2:after {
+  /* can only have one counter-reset per tag, so can't do it in h2/h2:before... */
+  counter-reset: example;
+}
+
+h3 {
+  /* must increment here */
+  counter-increment: subsection;
+}
+h3:before {
+  /* and must reset again here */
+  counter-reset: chapter 7;
+
+  content: counter(chapter) "." counter(section) "." counter(subsection);
+  display: inline;
+  margin-right: 1em;
+}
+h3[id*='example'] {
+  /* must increment here */
+  counter-increment: example;
+  display: inline;
+}
+h3[id*='example']:before {
+  /* and must reset again here */
+  counter-reset: chapter 7;
+
+  content: "Example " counter(chapter) "." counter(section) "." counter(example);
+  display: inline;
+  margin-right: 1em;
+}
+
+.no-numbering, .no-numbering:before, .no-numbering:after {
+  content: normal;
+  counter-reset: none;
+  counter-increment: none;
+}
+
+  </style>
+  <link rel="stylesheet" type="text/css" href="public/stylesheets/screen.css">
+  <link rel="stylesheet" type="text/css" media="(max-width: 1400px), (orientation: portrait)" href="public/stylesheets/screen-small.css">
+  <link rel="stylesheet" type="text/css" media="print" href="public/stylesheets/print.css">
+  <link rel="stylesheet" type="text/css" href="public/stylesheets/fonts.css">
+  <title>Implicits</title>
+</head>
+
+<body>
+  <header>
+    <nav id="chapters"><a id="github" href="https://github.com/scala/scala/tree/2.12.x/spec"><img src="public/images/github-logo@2x.png" alt="Edit at GitHub"></a><a href="01-lexical-syntax.html">1 Lexical Syntax</a><a href="02-identifiers-names-and-scopes.html">2 Identifiers, Names & Scopes</a><a href="03-types.html">3 Types</a><a href="04-basic-declarations-and-definitions.html">4 Basic Declarations & Definitions</a><a href="05-classes-and-objects.html">5 Classes & Objects</a><a href="06-expressions.html">6 Expressions</a><a href="07-implicits.html">7 Implicits</a><a href="08-pattern-matching.html">8 Pattern Matching</a><a href="09-top-level-definitions.html">9 Top-Level Definitions</a><a href="10-xml-expressions-and-patterns.html">10 XML</a><a href="11-annotations.html">11 Annotations</a><a href="12-the-scala-standard-library.html">12 Standard Library</a><a href="13-syntax-summary.html">13 Syntax Summary</a><a href="14-references.html">14 References</a><a href="15-changelog.html">15 Changelog</a></nav>
+  </header>
+  <aside class="left"><nav id="toc"></nav></aside>
+
+  <main id="content">
+<h1 id="implicits">Implicits</h1>
+
+<h2 id="the-implicit-modifier">The Implicit Modifier</h2>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="LocalModifier"></a>LocalModifier  ::= ‘implicit’
+<a name="ParamClauses"></a>ParamClauses   ::= {<t>ParamClause</t>} [<t>nl</t>] ‘(’ ‘implicit’ <t>Params</t> ‘)’
+</code></pre></div>
+<p>Template members and parameters labeled with an <code>implicit</code>
+modifier can be passed to <a href="07-implicits.html#implicit-parameters">implicit parameters</a>
+and can be used as implicit conversions called <a href="07-implicits.html#views">views</a>.
+The <code>implicit</code> modifier is illegal for all
+type members, as well as for <a href="09-top-level-definitions.html#packagings">top-level objects</a>.</p>
+
+<h6 id="example-monoid">Example Monoid</h6>
+
+<p>The following code defines an abstract class of monoids and
+two concrete implementations, <code>StringMonoid</code> and
+<code>IntMonoid</code>. The two implementations are marked implicit.</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">abstract class Monoid[A] extends SemiGroup[A] {
+  def unit: A
+  def add(x: A, y: A): A
+}
+object Monoids {
+  implicit object stringMonoid extends Monoid[String] {
+    def add(x: String, y: String): String = x.concat(y)
+    def unit: String = &quot;&quot;
+  }
+  implicit object intMonoid extends Monoid[Int] {
+    def add(x: Int, y: Int): Int = x + y
+    def unit: Int = 0
+  }
+}
+</code></pre></div>
+<h2 id="implicit-parameters">Implicit Parameters</h2>
+
+<p>An <em>implicit parameter list</em>
+<code>(implicit $p_1$,$\ldots$,$p_n$)</code> of a method marks the parameters $p_1 , \ldots , p_n$ as
+implicit. A method or constructor can have only one implicit parameter
+list, and it must be the last parameter list given.</p>
+
+<p>A method with implicit parameters can be applied to arguments just
+like a normal method. In this case the <code>implicit</code> label has no
+effect. However, if such a method misses arguments for its implicit
+parameters, such arguments will be automatically provided.</p>
+
+<p>The actual arguments that are eligible to be passed to an implicit
+parameter of type $T$ fall into two categories. First, eligible are
+all identifiers $x$ that can be accessed at the point of the method
+call without a prefix and that denote an
+<a href="07-implicits.html#the-implicit-modifier">implicit definition</a>
+or an implicit parameter.  An eligible
+identifier may thus be a local name, or a member of an enclosing
+template, or it may be have been made accessible without a prefix
+through an <a href="04-basic-declarations-and-definitions.html#import-clauses">import clause</a>. If there are no eligible
+identifiers under this rule, then, second, eligible are also all
+<code>implicit</code> members of some object that belongs to the implicit
+scope of the implicit parameter&#39;s type, $T$.</p>
+
+<p>The <em>implicit scope</em> of a type $T$ consists of all <a href="05-classes-and-objects.html#object-definitions">companion modules</a> of classes that are associated with the implicit parameter&#39;s type.
+Here, we say a class $C$ is <em>associated</em> with a type $T$ if it is a <a href="05-classes-and-objects.html#class-linearization">base class</a> of some part of $T$.</p>
+
+<p>The <em>parts</em> of a type $T$ are:</p>
+
+<ul>
+<li>if $T$ is a compound type <code>$T_1$ with $\ldots$ with $T_n$</code>,
+the union of the parts of $T_1 , \ldots , T_n$, as well as $T$ itself;</li>
+<li>if $T$ is a parameterized type <code>$S$[$T_1 , \ldots , T_n$]</code>,
+the union of the parts of $S$ and $T_1 , \ldots , T_n$;</li>
+<li>if $T$ is a singleton type <code>$p$.type</code>,
+the parts of the type of $p$;</li>
+<li>if $T$ is a type projection <code>$S$#$U$</code>,
+the parts of $S$ as well as $T$ itself;</li>
+<li>if $T$ is a type alias, the parts of its expansion;</li>
+<li>if $T$ is an abstract type, the parts of its upper bound;</li>
+<li>if $T$ denotes an implicit conversion to a type with a method with argument types $T_1 , \ldots , T_n$ and result type $U$,
+the union of the parts of $T_1 , \ldots , T_n$ and $U$;</li>
+<li>the parts of quantified (existential or universal) and annotated types are defined as the parts of the underlying types (e.g., the parts of <code>T forSome { ... }</code> are the parts of <code>T</code>);</li>
+<li>in all other cases, just $T$ itself.</li>
+</ul>
+
+<p>Note that packages are internally represented as classes with companion modules to hold the package members.
+Thus, implicits defined in a package object are part of the implicit scope of a type prefixed by that package.</p>
+
+<p>If there are several eligible arguments which match the implicit
+parameter&#39;s type, a most specific one will be chosen using the rules
+of static <a href="06-expressions.html#overloading-resolution">overloading resolution</a>.
+If the parameter has a default argument and no implicit argument can
+be found the default argument is used.</p>
+
+<h6 id="example">Example</h6>
+
+<p>Assuming the classes from the <a href="07-implicits.html#example-monoid"><code>Monoid</code> example</a>, here is a
+method which computes the sum of a list of elements using the
+monoid&#39;s <code>add</code> and <code>unit</code> operations.</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">def sum[A](xs: List[A])(implicit m: Monoid[A]): A =
+  if (xs.isEmpty) m.unit
+  else m.add(xs.head, sum(xs.tail))
+</code></pre></div>
+<p>The monoid in question is marked as an implicit parameter, and can therefore
+be inferred based on the type of the list.
+Consider for instance the call <code>sum(List(1, 2, 3))</code>
+in a context where <code>stringMonoid</code> and <code>intMonoid</code>
+are visible.  We know that the formal type parameter <code>a</code> of
+<code>sum</code> needs to be instantiated to <code>Int</code>. The only
+eligible object which matches the implicit formal parameter type
+<code>Monoid[Int]</code> is <code>intMonoid</code> so this object will
+be passed as implicit parameter.</p>
+
+<p>This discussion also shows that implicit parameters are inferred after
+any type arguments are <a href="06-expressions.html#local-type-inference">inferred</a>.</p>
+
+<p>Implicit methods can themselves have implicit parameters. An example
+is the following method from module <code>scala.List</code>, which injects
+lists into the <code>scala.Ordered</code> class, provided the element
+type of the list is also convertible to this type.</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">implicit def list2ordered[A](x: List[A])
+  (implicit elem2ordered: A =&gt; Ordered[A]): Ordered[List[A]] =
+  ...
+</code></pre></div>
+<p>Assume in addition a method</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">implicit def int2ordered(x: Int): Ordered[Int]
+</code></pre></div>
+<p>that injects integers into the <code>Ordered</code> class.  We can now
+define a <code>sort</code> method over ordered lists:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">def sort[A](xs: List[A])(implicit a2ordered: A =&gt; Ordered[A]) = ...
+</code></pre></div>
+<p>We can apply <code>sort</code> to a list of lists of integers
+<code>yss: List[List[Int]]</code>
+as follows:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">sort(yss)
+</code></pre></div>
+<p>The call above will be completed by passing two nested implicit arguments:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">sort(yss)(xs: List[Int] =&gt; list2ordered[Int](xs)(int2ordered)) .
+</code></pre></div>
+<p>The possibility of passing implicit arguments to implicit arguments
+raises the possibility of an infinite recursion.  For instance, one
+might try to define the following method, which injects <em>every</em> type into the
+<code>Ordered</code> class:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">implicit def magic[A](x: A)(implicit a2ordered: A =&gt; Ordered[A]): Ordered[A] =
+  a2ordered(x)
+</code></pre></div>
+<p>Now, if one tried to apply
+<code>sort</code> to an argument <code>arg</code> of a type that did not have
+another injection into the <code>Ordered</code> class, one would obtain an infinite
+expansion:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">sort(arg)(x =&gt; magic(x)(x =&gt; magic(x)(x =&gt; ... )))
+</code></pre></div>
+<p>To prevent such infinite expansions, the compiler keeps track of
+a stack of “open implicit types” for which implicit arguments are currently being
+searched. Whenever an implicit argument for type $T$ is searched, the
+“core type” of $T$ is added to the stack. Here, the <em>core type</em>
+of $T$ is $T$ with aliases expanded, top-level type <a href="11-annotations.html#user-defined-annotations">annotations</a> and
+<a href="03-types.html#compound-types">refinements</a> removed, and occurrences
+of top-level existentially bound variables replaced by their upper
+bounds. The core type is removed from the stack once the search for
+the implicit argument either definitely fails or succeeds. Everytime a
+core type is added to the stack, it is checked that this type does not
+dominate any of the other types in the set.</p>
+
+<p>Here, a core type $T$ <em>dominates</em> a type $U$ if $T$ is
+<a href="03-types.html#equivalence">equivalent</a>
+to $U$, or if the top-level type constructors of $T$ and $U$ have a
+common element and $T$ is more complex than $U$.</p>
+
+<p>The set of <em>top-level type constructors</em> $\mathit{ttcs}(T)$ of a type $T$ depends on the form of
+the type:</p>
+
+<ul>
+<li>For a type designator,  $\mathit{ttcs}(p.c) ~=~ {c}$;</li>
+<li>For a parameterized type,  $\mathit{ttcs}(p.c[\mathit{targs}]) ~=~ {c}$;</li>
+<li>For a singleton type,  $\mathit{ttcs}(p.type) ~=~ \mathit{ttcs}(T)$, provided $p$ has type $T$;</li>
+<li>For a compound type, <code>$\mathit{ttcs}(T_1$ with $\ldots$ with $T_n)$</code> $~=~ \mathit{ttcs}(T_1) \cup \ldots \cup \mathit{ttcs}(T_n)$.</li>
+</ul>
+
+<p>The <em>complexity</em> $\operatorname{complexity}(T)$ of a core type is an integer which also depends on the form of
+the type:</p>
+
+<ul>
+<li>For a type designator, $\operatorname{complexity}(p.c) ~=~ 1 + \operatorname{complexity}(p)$</li>
+<li>For a parameterized type, $\operatorname{complexity}(p.c[\mathit{targs}]) ~=~ 1 + \Sigma \operatorname{complexity}(\mathit{targs})$</li>
+<li>For a singleton type denoting a package $p$, $\operatorname{complexity}(p.type) ~=~ 0$</li>
+<li>For any other singleton type, $\operatorname{complexity}(p.type) ~=~ 1 + \operatorname{complexity}(T)$, provided $p$ has type $T$;</li>
+<li>For a compound type, <code>$\operatorname{complexity}(T_1$ with $\ldots$ with $T_n)$</code> $= \Sigma\operatorname{complexity}(T_i)$</li>
+</ul>
+
+<h6 id="example">Example</h6>
+
+<p>When typing <code>sort(xs)</code> for some list <code>xs</code> of type <code>List[List[List[Int]]]</code>,
+the sequence of types for
+which implicit arguments are searched is</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">List[List[Int]] =&gt; Ordered[List[List[Int]]],
+List[Int] =&gt; Ordered[List[Int]]
+Int =&gt; Ordered[Int]
+</code></pre></div>
+<p>All types share the common type constructor <code>scala.Function1</code>,
+but the complexity of the each new type is lower than the complexity of the previous types.
+Hence, the code typechecks.</p>
+
+<h6 id="example">Example</h6>
+
+<p>Let <code>ys</code> be a list of some type which cannot be converted
+to <code>Ordered</code>. For instance:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">val ys = List(new IllegalArgumentException, new ClassCastException, new Error)
+</code></pre></div>
+<p>Assume that the definition of <code>magic</code> above is in scope. Then the sequence
+of types for which implicit arguments are searched is</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">Throwable =&gt; Ordered[Throwable],
+Throwable =&gt; Ordered[Throwable],
+...
+</code></pre></div>
+<p>Since the second type in the sequence is equal to the first, the compiler
+will issue an error signalling a divergent implicit expansion.</p>
+
+<h2 id="views">Views</h2>
+
+<p>Implicit parameters and methods can also define implicit conversions
+called views. A <em>view</em> from type $S$ to type $T$ is
+defined by an implicit value which has function type
+<code>$S$=&gt;$T$</code> or <code>(=&gt;$S$)=&gt;$T$</code> or by a method convertible to a value of that
+type.</p>
+
+<p>Views are applied in three situations:</p>
+
+<ol>
+<li> If an expression $e$ is of type $T$, and $T$ does not conform to the
+expression&#39;s expected type $\mathit{pt}$. In this case an implicit $v$ is
+searched which is applicable to $e$ and whose result type conforms to
+$\mathit{pt}$.  The search proceeds as in the case of implicit parameters,
+where the implicit scope is the one of <code>$T$ =&gt; $\mathit{pt}$</code>. If
+such a view is found, the expression $e$ is converted to
+<code>$v$($e$)</code>.</li>
+<li> In a selection $e.m$ with $e$ of type $T$, if the selector $m$ does
+not denote an accessible member of $T$.  In this case, a view $v$ is searched
+which is applicable to $e$ and whose result contains a member named
+$m$.  The search proceeds as in the case of implicit parameters, where
+the implicit scope is the one of $T$.  If such a view is found, the
+selection $e.m$ is converted to <code>$v$($e$).$m$</code>.</li>
+<li> In a selection $e.m(\mathit{args})$ with $e$ of type $T$, if the selector
+$m$ denotes some member(s) of $T$, but none of these members is applicable to the arguments
+$\mathit{args}$. In this case a view $v$ is searched which is applicable to $e$
+and whose result contains a method $m$ which is applicable to $\mathit{args}$.
+The search proceeds as in the case of implicit parameters, where
+the implicit scope is the one of $T$.  If such a view is found, the
+selection $e.m$ is converted to <code>$v$($e$).$m(\mathit{args})$</code>.</li>
+</ol>
+
+<p>The implicit view, if it is found, can accept is argument $e$ as a
+call-by-value or as a call-by-name parameter. However, call-by-value
+implicits take precedence over call-by-name implicits.</p>
+
+<p>As for implicit parameters, overloading resolution is applied
+if there are several possible candidates (of either the call-by-value
+or the call-by-name category).</p>
+
+<h6 id="example-ordered">Example Ordered</h6>
+
+<p>Class <code>scala.Ordered[A]</code> contains a method</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">  def &lt;= [B &gt;: A](that: B)(implicit b2ordered: B =&gt; Ordered[B]): Boolean .
+</code></pre></div>
+<p>Assume two lists <code>xs</code> and <code>ys</code> of type <code>List[Int]</code>
+and assume that the <code>list2ordered</code> and <code>int2ordered</code>
+methods defined <a href="07-implicits.html#implicit-parameters">here</a> are in scope.
+Then the operation</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">  xs &lt;= ys
+</code></pre></div>
+<p>is legal, and is expanded to:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">  list2ordered(xs)(int2ordered).&lt;=
+    (ys)
+    (xs =&gt; list2ordered(xs)(int2ordered))
+</code></pre></div>
+<p>The first application of <code>list2ordered</code> converts the list
+<code>xs</code> to an instance of class <code>Ordered</code>, whereas the second
+occurrence is part of an implicit parameter passed to the <code>&lt;=</code>
+method.</p>
+
+<h2 id="context-bounds-and-view-bounds">Context Bounds and View Bounds</h2>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf">  <a name="TypeParam"></a>TypeParam ::= (<t>id</t> | ‘_’) [<t>TypeParamClause</t>] [‘&gt;:’ <t>Type</t>] [‘&lt;:’ <t>Type</t>]
+                {‘&lt;%’ <t>Type</t>} {‘:’ <t>Type</t>}
+</code></pre></div>
+<p>A type parameter $A$ of a method or non-trait class may have one or more view
+bounds <code>$A$ &lt;% $T$</code>. In this case the type parameter may be
+instantiated to any type $S$ which is convertible by application of a
+view to the bound $T$.</p>
+
+<p>A type parameter $A$ of a method or non-trait class may also have one
+or more context bounds <code>$A$ : $T$</code>. In this case the type parameter may be
+instantiated to any type $S$ for which <em>evidence</em> exists at the
+instantiation point that $S$ satisfies the bound $T$. Such evidence
+consists of an implicit value with type $T[S]$.</p>
+
+<p>A method or class containing type parameters with view or context bounds is treated as being
+equivalent to a method with implicit parameters. Consider first the case of a
+single parameter with view and/or context bounds such as:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">def $f$[$A$ &lt;% $T_1$ ... &lt;% $T_m$ : $U_1$ : $U_n$]($\mathit{ps}$): $R$ = ...
+</code></pre></div>
+<p>Then the method definition above is expanded to</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">def $f$[$A$]($\mathit{ps}$)(implicit $v_1$: $A$ =&gt; $T_1$, ..., $v_m$: $A$ =&gt; $T_m$,
+                       $w_1$: $U_1$[$A$], ..., $w_n$: $U_n$[$A$]): $R$ = ...
+</code></pre></div>
+<p>where the $v_i$ and $w_j$ are fresh names for the newly introduced implicit parameters. These
+parameters are called <em>evidence parameters</em>.</p>
+
+<p>If a class or method has several view- or context-bounded type parameters, each
+such type parameter is expanded into evidence parameters in the order
+they appear and all the resulting evidence parameters are concatenated
+in one implicit parameter section.  Since traits do not take
+constructor parameters, this translation does not work for them.
+Consequently, type-parameters in traits may not be view- or context-bounded.</p>
+
+<p>Evidence parameters are prepended to the existing implicit parameter section, if one exists.</p>
+
+<p>For example:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">def foo[A: M](implicit b: B): C
+// expands to:
+// def foo[A](implicit evidence$1: M[A], b: B): C
+</code></pre></div>
+<h6 id="example">Example</h6>
+
+<p>The <code>&lt;=</code> method from the <a href="07-implicits.html#example-ordered"><code>Ordered</code> example</a> can be declared
+more concisely as follows:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">def &lt;= [B &gt;: A &lt;% Ordered[B]](that: B): Boolean
+</code></pre></div>
+<h2 id="manifests">Manifests</h2>
+
+<p>Manifests are type descriptors that can be automatically generated by
+the Scala compiler as arguments to implicit parameters. The Scala
+standard library contains a hierarchy of four manifest classes,
+with <code>OptManifest</code>
+at the top. Their signatures follow the outline below.</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">trait OptManifest[+T]
+object NoManifest extends OptManifest[Nothing]
+trait ClassManifest[T] extends OptManifest[T]
+trait Manifest[T] extends ClassManifest[T]
+</code></pre></div>
+<p>If an implicit parameter of a method or constructor is of a subtype $M[T]$ of
+class <code>OptManifest[T]</code>, <em>a manifest is determined for $M[S]$</em>,
+according to the following rules.</p>
+
+<p>First if there is already an implicit argument that matches $M[T]$, this
+argument is selected.</p>
+
+<p>Otherwise, let $\mathit{Mobj}$ be the companion object <code>scala.reflect.Manifest</code>
+if $M$ is trait <code>Manifest</code>, or be
+the companion object <code>scala.reflect.ClassManifest</code> otherwise. Let $M&#39;$ be the trait
+<code>Manifest</code> if $M$ is trait <code>Manifest</code>, or be the trait <code>OptManifest</code> otherwise.
+Then the following rules apply.</p>
+
+<ol>
+<li> If $T$ is a value class or one of the classes <code>Any</code>, <code>AnyVal</code>, <code>Object</code>,
+<code>Null</code>, or <code>Nothing</code>,
+a manifest for it is generated by selecting
+the corresponding manifest value <code>Manifest.$T$</code>, which exists in the
+<code>Manifest</code> module.</li>
+<li> If $T$ is an instance of <code>Array[$S$]</code>, a manifest is generated
+with the invocation <code>$\mathit{Mobj}$.arrayType[S](m)</code>, where $m$ is the manifest
+determined for $M[S]$.</li>
+<li> If $T$ is some other class type $S$#$C[U_1, \ldots, U_n]$ where the prefix
+type $S$ cannot be statically determined from the class $C$,
+a manifest is generated with the invocation <code>$\mathit{Mobj}$.classType[T]($m_0$, classOf[T], $ms$)</code>
+where $m_0$ is the manifest determined for $M&#39;[S]$ and $ms$ are the
+manifests determined for $M&#39;[U_1], \ldots, M&#39;[U_n]$.</li>
+<li> If $T$ is some other class type with type arguments $U_1 , \ldots , U_n$,
+a manifest is generated
+with the invocation <code>$\mathit{Mobj}$.classType[T](classOf[T], $ms$)</code>
+where $ms$ are the
+manifests determined for $M&#39;[U_1] , \ldots , M&#39;[U_n]$.</li>
+<li> If $T$ is a singleton type <code>$p$.type</code>, a manifest is generated with
+the invocation <code>$\mathit{Mobj}$.singleType[T]($p$)</code></li>
+<li> If $T$ is a refined type $T&#39; { R }$, a manifest is generated for $T&#39;$.
+(That is, refinements are never reflected in manifests).</li>
+<li> If $T$ is an intersection type
+<code>$T_1$ with $, \ldots ,$ with $T_n$</code>
+where $n &gt; 1$, the result depends on whether a full manifest is
+to be determined or not.
+If $M$ is trait <code>Manifest</code>, then
+a manifest is generated with the invocation
+<code>Manifest.intersectionType[T]($ms$)</code> where $ms$ are the manifests
+determined for $M[T_1] , \ldots , M[T_n]$.
+Otherwise, if $M$ is trait <code>ClassManifest</code>,
+then a manifest is generated for the <a href="03-types.html#type-erasure">intersection dominator</a>
+of the types $T_1 , \ldots , T_n$.</li>
+<li> If $T$ is some other type, then if $M$ is trait <code>OptManifest</code>,
+a manifest is generated from the designator <code>scala.reflect.NoManifest</code>.
+If $M$ is a type different from <code>OptManifest</code>, a static error results.</li>
+</ol>
+
+  </main>
+
+  <script src="public/scripts/toc.js"></script>
+  <script src="public/scripts/highlight.pack.js"></script>
+  <script src="public/scripts/main.js"></script>
+</body>
+</html>

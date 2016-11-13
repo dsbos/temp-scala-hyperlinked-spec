@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+
+  <link rel="icon" type="image/png" href="public/favicon.ico">
+  <link rel="shortcut icon" type="image/png" href="public/favicon.ico">
+
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      skipTags: ['script', 'noscript', 'style', 'textarea'],
+      processEscapes: true
+    }
+  });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/2.6-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+  <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.2/styles/default.min.css">
+  <!-- need to use include to see value of page.chapter variable -->
+  <style type="text/css">
+    h1 {
+  /* must reset here */
+  counter-reset: chapter 11;
+}
+h1:before {
+  /* and must reset again here */
+  counter-reset: chapter 11;
+  content: "Chapter " counter(chapter);
+  display: block;
+}
+
+h2 {
+  /* must increment here */
+  counter-increment: section;
+  counter-reset: subsection;
+}
+h2:before {
+  /* and must reset again here */
+  counter-reset: chapter 11;
+
+  content: counter(chapter) "." counter(section) ;
+  display: inline;
+  margin-right: 1em;
+}
+h2:after {
+  /* can only have one counter-reset per tag, so can't do it in h2/h2:before... */
+  counter-reset: example;
+}
+
+h3 {
+  /* must increment here */
+  counter-increment: subsection;
+}
+h3:before {
+  /* and must reset again here */
+  counter-reset: chapter 11;
+
+  content: counter(chapter) "." counter(section) "." counter(subsection);
+  display: inline;
+  margin-right: 1em;
+}
+h3[id*='example'] {
+  /* must increment here */
+  counter-increment: example;
+  display: inline;
+}
+h3[id*='example']:before {
+  /* and must reset again here */
+  counter-reset: chapter 11;
+
+  content: "Example " counter(chapter) "." counter(section) "." counter(example);
+  display: inline;
+  margin-right: 1em;
+}
+
+.no-numbering, .no-numbering:before, .no-numbering:after {
+  content: normal;
+  counter-reset: none;
+  counter-increment: none;
+}
+
+  </style>
+  <link rel="stylesheet" type="text/css" href="public/stylesheets/screen.css">
+  <link rel="stylesheet" type="text/css" media="(max-width: 1400px), (orientation: portrait)" href="public/stylesheets/screen-small.css">
+  <link rel="stylesheet" type="text/css" media="print" href="public/stylesheets/print.css">
+  <link rel="stylesheet" type="text/css" href="public/stylesheets/fonts.css">
+  <title>Annotations</title>
+</head>
+
+<body>
+  <header>
+    <nav id="chapters"><a id="github" href="https://github.com/scala/scala/tree/2.12.x/spec"><img src="public/images/github-logo@2x.png" alt="Edit at GitHub"></a><a href="01-lexical-syntax.html">1 Lexical Syntax</a><a href="02-identifiers-names-and-scopes.html">2 Identifiers, Names & Scopes</a><a href="03-types.html">3 Types</a><a href="04-basic-declarations-and-definitions.html">4 Basic Declarations & Definitions</a><a href="05-classes-and-objects.html">5 Classes & Objects</a><a href="06-expressions.html">6 Expressions</a><a href="07-implicits.html">7 Implicits</a><a href="08-pattern-matching.html">8 Pattern Matching</a><a href="09-top-level-definitions.html">9 Top-Level Definitions</a><a href="10-xml-expressions-and-patterns.html">10 XML</a><a href="11-annotations.html">11 Annotations</a><a href="12-the-scala-standard-library.html">12 Standard Library</a><a href="13-syntax-summary.html">13 Syntax Summary</a><a href="14-references.html">14 References</a><a href="15-changelog.html">15 Changelog</a></nav>
+  </header>
+  <aside class="left"><nav id="toc"></nav></aside>
+
+  <main id="content">
+<h1 id="annotations">Annotations</h1>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf">  <a name="Annotation"></a>Annotation       ::=  ‘@’ <a href=03-types.html#SimpleType>SimpleType</a> {<a href=06-expressions.html#ArgumentExprs>ArgumentExprs</a>}
+  <a name="ConstrAnnotation"></a>ConstrAnnotation ::=  ‘@’ <a href=03-types.html#SimpleType>SimpleType</a> <a href=06-expressions.html#ArgumentExprs>ArgumentExprs</a>
+</code></pre></div>
+<h2 id="definition">Definition</h2>
+
+<p>Annotations associate meta-information with definitions.
+A simple annotation has the form <code>@$c$</code> or <code>@$c(a_1 , \ldots , a_n)$</code>.
+Here, $c$ is a constructor of a class $C$, which must conform
+to the class <code>scala.Annotation</code>.</p>
+
+<p>Annotations may apply to definitions or declarations, types, or
+expressions.  An annotation of a definition or declaration appears in
+front of that definition.  An annotation of a type appears after
+that type. An annotation of an expression $e$ appears after the
+expression $e$, separated by a colon. More than one annotation clause
+may apply to an entity. The order in which these annotations are given
+does not matter.</p>
+
+<p>Examples:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">@deprecated(&quot;Use D&quot;, &quot;1.0&quot;) class C { ... } // Class annotation
+@transient @volatile var m: Int             // Variable annotation
+String @local                               // Type annotation
+(e: @unchecked) match { ... }               // Expression annotation
+</code></pre></div>
+<h2 id="predefined-annotations">Predefined Annotations</h2>
+
+<h3 id="java-platform-annotations">Java Platform Annotations</h3>
+
+<p>The meaning of annotation clauses is implementation-dependent. On the
+Java platform, the following annotations have a standard meaning.</p>
+
+<ul>
+<li><p><code>@transient</code> Marks a field to be non-persistent; this is
+equivalent to the <code>transient</code>
+modifier in Java.</p></li>
+<li><p><code>@volatile</code> Marks a field which can change its value
+outside the control of the program; this
+is equivalent to the <code>volatile</code>
+modifier in Java.</p></li>
+<li><p><code>@SerialVersionUID(&lt;longlit&gt;)</code> Attaches a serial version identifier (a
+<code>long</code> constant) to a class.
+This is equivalent to a the following field
+definition in Java:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">private final static SerialVersionUID = &lt;longlit&gt;
+</code></pre></div></li>
+<li><p><code>@throws(&lt;classlit&gt;)</code> A Java compiler checks that a program contains handlers for checked exceptions
+by analyzing which checked exceptions can result from execution of a method or
+constructor. For each checked exception which is a possible result, the
+<code>throws</code>
+clause for the method or constructor must mention the class of that exception
+or one of the superclasses of the class of that exception.</p></li>
+</ul>
+
+<h3 id="java-beans-annotations">Java Beans Annotations</h3>
+
+<ul>
+<li><p><code>@scala.beans.BeanProperty</code> When prefixed to a definition of some variable <code>X</code>, this
+annotation causes getter and setter methods <code>getX</code>, <code>setX</code>
+in the Java bean style to be added in the class containing the
+variable. The first letter of the variable appears capitalized after
+the <code>get</code> or <code>set</code>. When the annotation is added to the
+definition of an immutable value definition <code>X</code>, only a getter is
+generated. The construction of these methods is part of
+code-generation; therefore, these methods become visible only once a
+classfile for the containing class is generated.</p></li>
+<li><p><code>@scala.beans.BooleanBeanProperty</code> This annotation is equivalent to <code>scala.reflect.BeanProperty</code>, but
+the generated getter method is named <code>isX</code> instead of <code>getX</code>.</p></li>
+</ul>
+
+<h3 id="deprecation-annotations">Deprecation Annotations</h3>
+
+<ul>
+<li><p><code>@deprecated(message: &lt;stringlit&gt;, since: &lt;stringlit&gt;)</code><br/>
+Marks a definition as deprecated. Accesses to the
+defined entity will then cause a deprecated warning mentioning the
+<em>message</em> <code>&lt;stringlit&gt;</code> to be issued from the compiler.
+The argument <em>since</em> documents since when the definition should be considered deprecated.<br/>
+Deprecated warnings are suppressed in code that belongs itself to a definition
+that is labeled deprecated.</p></li>
+<li><p><code>@deprecatedName(name: &lt;symbollit&gt;)</code><br/>
+Marks a formal parameter name as deprecated. Invocations of this entity
+using named parameter syntax referring to the deprecated parameter name cause a deprecation warning.</p></li>
+</ul>
+
+<h3 id="scala-compiler-annotations">Scala Compiler Annotations</h3>
+
+<ul>
+<li><p><code>@unchecked</code> When applied to the selector of a <code>match</code> expression,
+this attribute suppresses any warnings about non-exhaustive pattern
+matches which would otherwise be emitted. For instance, no warnings
+would be produced for the method definition below.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">def f(x: Option[Int]) = (x: @unchecked) match {
+case Some(y) =&gt; y
+}
+</code></pre></div>
+<p>Without the <code>@unchecked</code> annotation, a Scala compiler could
+infer that the pattern match is non-exhaustive, and could produce a
+warning because <code>Option</code> is a <code>sealed</code> class.</p></li>
+<li><p><code>@uncheckedStable</code> When applied a value declaration or definition, it allows the defined
+value to appear in a path, even if its type is <a href="03-types.html#volatile-types">volatile</a>.
+For instance, the following member definitions are legal:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">type A { type T }
+type B
+@uncheckedStable val x: A with B // volatile type
+val y: x.T                       // OK since `x&#39; is still a path
+</code></pre></div>
+<p>Without the <code>@uncheckedStable</code> annotation, the designator <code>x</code>
+would not be a path since its type <code>A with B</code> is volatile. Hence,
+the reference <code>x.T</code> would be malformed.</p>
+
+<p>When applied to value declarations or definitions that have non-volatile
+types, the annotation has no effect.</p></li>
+<li><p><code>@specialized</code> When applied to the definition of a type parameter, this annotation causes
+the compiler
+to generate specialized definitions for primitive types. An optional list of
+primitive
+types may be given, in which case specialization takes into account only
+those types.
+For instance, the following code would generate specialized traits for
+<code>Unit</code>, <code>Int</code> and <code>Double</code></p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">trait Function0[@specialized(Unit, Int, Double) T] {
+  def apply: T
+}
+</code></pre></div>
+<p>Whenever the static type of an expression matches a specialized variant of
+a definition, the compiler will instead use the specialized version.
+See the <a href="http://docs.scala-lang.org/sips/completed/scala-specialization.html">specialization sid</a> for more details of the implementation.</p></li>
+</ul>
+
+<h2 id="user-defined-annotations">User-defined Annotations</h2>
+
+<p>Other annotations may be interpreted by platform- or
+application-dependent tools. Class <code>scala.Annotation</code> has two
+sub-traits which are used to indicate how these annotations are
+retained. Instances of an annotation class inheriting from trait
+<code>scala.ClassfileAnnotation</code> will be stored in the generated class
+files. Instances of an annotation class inheriting from trait
+<code>scala.StaticAnnotation</code> will be visible to the Scala type-checker
+in every compilation unit where the annotated symbol is accessed. An
+annotation class can inherit from both <code>scala.ClassfileAnnotation</code>
+and <code>scala.StaticAnnotation</code>. If an annotation class inherits from
+neither <code>scala.ClassfileAnnotation</code> nor
+<code>scala.StaticAnnotation</code>, its instances are visible only locally
+during the compilation run that analyzes them.</p>
+
+<p>Classes inheriting from <code>scala.ClassfileAnnotation</code> may be
+subject to further restrictions in order to assure that they can be
+mapped to the host environment. In particular, on both the Java and
+the .NET platforms, such classes must be toplevel; i.e. they may not
+be contained in another class or object.  Additionally, on both
+Java and .NET, all constructor arguments must be constant expressions.</p>
+
+  </main>
+
+  <script src="public/scripts/toc.js"></script>
+  <script src="public/scripts/highlight.pack.js"></script>
+  <script src="public/scripts/main.js"></script>
+</body>
+</html>

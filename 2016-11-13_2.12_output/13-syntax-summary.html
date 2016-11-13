@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+
+  <link rel="icon" type="image/png" href="public/favicon.ico">
+  <link rel="shortcut icon" type="image/png" href="public/favicon.ico">
+
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      skipTags: ['script', 'noscript', 'style', 'textarea'],
+      processEscapes: true
+    }
+  });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/2.6-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+  <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.2/styles/default.min.css">
+  <!-- need to use include to see value of page.chapter variable -->
+  <style type="text/css">
+    h1 {
+  /* must reset here */
+  counter-reset: chapter 13;
+}
+h1:before {
+  /* and must reset again here */
+  counter-reset: chapter 13;
+  content: "Chapter " counter(chapter);
+  display: block;
+}
+
+h2 {
+  /* must increment here */
+  counter-increment: section;
+  counter-reset: subsection;
+}
+h2:before {
+  /* and must reset again here */
+  counter-reset: chapter 13;
+
+  content: counter(chapter) "." counter(section) ;
+  display: inline;
+  margin-right: 1em;
+}
+h2:after {
+  /* can only have one counter-reset per tag, so can't do it in h2/h2:before... */
+  counter-reset: example;
+}
+
+h3 {
+  /* must increment here */
+  counter-increment: subsection;
+}
+h3:before {
+  /* and must reset again here */
+  counter-reset: chapter 13;
+
+  content: counter(chapter) "." counter(section) "." counter(subsection);
+  display: inline;
+  margin-right: 1em;
+}
+h3[id*='example'] {
+  /* must increment here */
+  counter-increment: example;
+  display: inline;
+}
+h3[id*='example']:before {
+  /* and must reset again here */
+  counter-reset: chapter 13;
+
+  content: "Example " counter(chapter) "." counter(section) "." counter(example);
+  display: inline;
+  margin-right: 1em;
+}
+
+.no-numbering, .no-numbering:before, .no-numbering:after {
+  content: normal;
+  counter-reset: none;
+  counter-increment: none;
+}
+
+  </style>
+  <link rel="stylesheet" type="text/css" href="public/stylesheets/screen.css">
+  <link rel="stylesheet" type="text/css" media="(max-width: 1400px), (orientation: portrait)" href="public/stylesheets/screen-small.css">
+  <link rel="stylesheet" type="text/css" media="print" href="public/stylesheets/print.css">
+  <link rel="stylesheet" type="text/css" href="public/stylesheets/fonts.css">
+  <title>Syntax Summary</title>
+</head>
+
+<body>
+  <header>
+    <nav id="chapters"><a id="github" href="https://github.com/scala/scala/tree/2.12.x/spec"><img src="public/images/github-logo@2x.png" alt="Edit at GitHub"></a><a href="01-lexical-syntax.html">1 Lexical Syntax</a><a href="02-identifiers-names-and-scopes.html">2 Identifiers, Names & Scopes</a><a href="03-types.html">3 Types</a><a href="04-basic-declarations-and-definitions.html">4 Basic Declarations & Definitions</a><a href="05-classes-and-objects.html">5 Classes & Objects</a><a href="06-expressions.html">6 Expressions</a><a href="07-implicits.html">7 Implicits</a><a href="08-pattern-matching.html">8 Pattern Matching</a><a href="09-top-level-definitions.html">9 Top-Level Definitions</a><a href="10-xml-expressions-and-patterns.html">10 XML</a><a href="11-annotations.html">11 Annotations</a><a href="12-the-scala-standard-library.html">12 Standard Library</a><a href="13-syntax-summary.html">13 Syntax Summary</a><a href="14-references.html">14 References</a><a href="15-changelog.html">15 Changelog</a></nav>
+  </header>
+  <aside class="left"><nav id="toc"></nav></aside>
+
+  <main id="content">
+<h1 id="syntax-summary">Syntax Summary</h1>
+
+<p>The following descriptions of Scala tokens uses literal characters <code>‘c’</code> when referring to the ASCII fragment <code>\u0000</code> – <code>\u007F</code>.</p>
+
+<p><em>Unicode escapes</em> are used to represent the Unicode character with the given hexadecimal code:</p>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="UnicodeEscape"></a>UnicodeEscape ::= ‘\’ ‘u’ {‘u’} <a href=01-lexical-syntax.html#hexDigit>hexDigit</a> <a href=01-lexical-syntax.html#hexDigit>hexDigit</a> <a href=01-lexical-syntax.html#hexDigit>hexDigit</a> <a href=01-lexical-syntax.html#hexDigit>hexDigit</a>
+<a name="hexDigit"></a>hexDigit      ::= ‘0’ | … | ‘9’ | ‘A’ | … | ‘F’ | ‘a’ | … | ‘f’
+</code></pre></div>
+<h2 id="lexical-syntax">Lexical Syntax</h2>
+
+<p>The lexical syntax of Scala is given by the following grammar in EBNF form:</p>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="whiteSpace"></a>whiteSpace       ::=  ‘\u0020’ | ‘\u0009’ | ‘\u000D’ | ‘\u000A’
+<a name="upper"></a>upper            ::=  ‘A’ | … | ‘Z’ | ‘\$’ | ‘_’  // and Unicode category Lu
+<a name="lower"></a>lower            ::=  ‘a’ | … | ‘z’ // and Unicode category Ll
+<a name="letter"></a>letter           ::=  <t>upper</t> | <t>lower</t> // and Unicode categories Lo, Lt, Nl
+<a name="digit"></a>digit            ::=  ‘0’ | … | ‘9’
+<a name="paren"></a>paren            ::=  ‘(’ | ‘)’ | ‘[’ | ‘]’ | ‘{’ | ‘}’
+<a name="delim"></a>delim            ::=  ‘`’ | ‘&#39;’ | ‘&quot;’ | ‘.’ | ‘;’ | ‘,’
+<a name="opchar"></a>opchar           ::= // printableChar not matched by (whiteSpace | upper | lower |
+                     // letter | digit | paren | delim | opchar | Unicode_Sm | Unicode_So)
+<a name="printableChar"></a>printableChar    ::= // all characters in [\u0020, \u007F] inclusive
+<a name="charEscapeSeq"></a>charEscapeSeq    ::= ‘\’ (‘b’ | ‘t’ | ‘n’ | ‘f’ | ‘r’ | ‘&quot;’ | ‘&#39;’ | ‘\’)
+
+<a name="op"></a>op               ::=  <t>opchar</t> {<t>opchar</t>}
+<a name="varid"></a>varid            ::=  <t>lower</t> <a href=01-lexical-syntax.html#idrest>idrest</a>
+<a name="plainid"></a>plainid          ::=  <t>upper</t> <a href=01-lexical-syntax.html#idrest>idrest</a>
+                 |  <a href=01-lexical-syntax.html#varid>varid</a>
+                 |  <a href=01-lexical-syntax.html#op>op</a>
+<a name="id"></a>id               ::=  <a href=01-lexical-syntax.html#plainid>plainid</a>
+                 |  ‘`’ <a href=01-lexical-syntax.html#stringLiteral>stringLiteral</a> ‘`’
+<a name="idrest"></a>idrest           ::=  {<t>letter</t> | <a href=01-lexical-syntax.html#digit>digit</a>} [‘_’ <a href=01-lexical-syntax.html#op>op</a>]
+
+<a name="integerLiteral"></a>integerLiteral   ::=  (<a href=01-lexical-syntax.html#decimalNumeral>decimalNumeral</a> | <a href=01-lexical-syntax.html#hexNumeral>hexNumeral</a>) [‘L’ | ‘l’]
+<a name="decimalNumeral"></a>decimalNumeral   ::=  ‘0’ | <a href=01-lexical-syntax.html#nonZeroDigit>nonZeroDigit</a> {<a href=01-lexical-syntax.html#digit>digit</a>}
+<a name="hexNumeral"></a>hexNumeral       ::=  ‘0’ (‘x’ | ‘X’) <a href=01-lexical-syntax.html#hexDigit>hexDigit</a> {<a href=01-lexical-syntax.html#hexDigit>hexDigit</a>}
+<a name="digit"></a>digit            ::=  ‘0’ | <a href=01-lexical-syntax.html#nonZeroDigit>nonZeroDigit</a>
+<a name="nonZeroDigit"></a>nonZeroDigit     ::=  ‘1’ | … | ‘9’
+
+<a name="floatingPointLiteral"></a>floatingPointLiteral
+                 ::=  <a href=01-lexical-syntax.html#digit>digit</a> {<a href=01-lexical-syntax.html#digit>digit</a>} ‘.’ <a href=01-lexical-syntax.html#digit>digit</a> {<a href=01-lexical-syntax.html#digit>digit</a>} [<a href=01-lexical-syntax.html#exponentPart>exponentPart</a>] [<a href=01-lexical-syntax.html#floatType>floatType</a>]
+                 |  ‘.’ <a href=01-lexical-syntax.html#digit>digit</a> {<a href=01-lexical-syntax.html#digit>digit</a>} [<a href=01-lexical-syntax.html#exponentPart>exponentPart</a>] [<a href=01-lexical-syntax.html#floatType>floatType</a>]
+                 |  <a href=01-lexical-syntax.html#digit>digit</a> {<a href=01-lexical-syntax.html#digit>digit</a>} <a href=01-lexical-syntax.html#exponentPart>exponentPart</a> [<a href=01-lexical-syntax.html#floatType>floatType</a>]
+                 |  <a href=01-lexical-syntax.html#digit>digit</a> {<a href=01-lexical-syntax.html#digit>digit</a>} [<a href=01-lexical-syntax.html#exponentPart>exponentPart</a>] <a href=01-lexical-syntax.html#floatType>floatType</a>
+<a name="exponentPart"></a>exponentPart     ::=  (‘E’ | ‘e’) [‘+’ | ‘-’] <a href=01-lexical-syntax.html#digit>digit</a> {<a href=01-lexical-syntax.html#digit>digit</a>}
+<a name="floatType"></a>floatType        ::=  ‘F’ | ‘f’ | ‘D’ | ‘d’
+
+<a name="booleanLiteral"></a>booleanLiteral   ::=  ‘true’ | ‘false’
+
+<a name="characterLiteral"></a>characterLiteral ::=  ‘&#39;’ (<t>charNoQuoteOrNewline</t> | <a href=01-lexical-syntax.html#UnicodeEscape>UnicodeEscape</a> | <t>charEscapeSeq</t>) ‘&#39;’
+
+<a name="stringLiteral"></a>stringLiteral    ::=  ‘&quot;’ {<a href=01-lexical-syntax.html#stringElement>stringElement</a>} ‘&quot;’
+                 |  ‘&<t>quot</t>;&<t>quot</t>;&quot;’ <a href=01-lexical-syntax.html#multiLineChars>multiLineChars</a> ‘&<t>quot</t>;&<t>quot</t>;&quot;’
+<a name="stringElement"></a>stringElement    ::=  <t>charNoDoubleQuoteOrNewline</t>
+                 |  <a href=01-lexical-syntax.html#UnicodeEscape>UnicodeEscape</a>
+                 |  <t>charEscapeSeq</t>
+<a name="multiLineChars"></a>multiLineChars   ::=  {[‘&quot;’] [‘&quot;’] <t>charNoDoubleQuote</t>} {‘&quot;’}
+
+<a name="symbolLiteral"></a>symbolLiteral    ::=  ‘&#39;’ <a href=01-lexical-syntax.html#plainid>plainid</a>
+
+<a name="comment"></a>comment          ::=  ‘/*’ “<t>any</t> <t>sequence</t> <t>of</t> <t>characters</t>; <t>nested</t> <t>comments</t> <t>are</t> <t>allowed</t>” ‘*/’
+                 |  ‘//’ “any sequence of characters up to end of line”
+
+<a name="nl"></a>nl               ::=  $\<t>mathit</t>{“<t>new</t> <t>line</t> <t>character</t>”}$
+<a name="semi"></a>semi             ::=  ‘;’ |  <t>nl</t> {<t>nl</t>}
+</code></pre></div>
+<h2 id="context-free-syntax">Context-free Syntax</h2>
+
+<p>The context-free syntax of Scala is given by the following EBNF
+grammar:</p>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf">  <a name="Literal"></a>Literal           ::=  [‘-’] <a href=01-lexical-syntax.html#integerLiteral>integerLiteral</a>
+                      |  [‘-’] <a href=01-lexical-syntax.html#floatingPointLiteral>floatingPointLiteral</a>
+                      |  <a href=01-lexical-syntax.html#booleanLiteral>booleanLiteral</a>
+                      |  <a href=01-lexical-syntax.html#characterLiteral>characterLiteral</a>
+                      |  <a href=01-lexical-syntax.html#stringLiteral>stringLiteral</a>
+                      |  <a href=01-lexical-syntax.html#symbolLiteral>symbolLiteral</a>
+                      |  ‘null’
+
+  <a name="QualId"></a>QualId            ::=  <a href=01-lexical-syntax.html#id>id</a> {‘.’ <a href=01-lexical-syntax.html#id>id</a>}
+  <a name="ids"></a>ids               ::=  <a href=01-lexical-syntax.html#id>id</a> {‘,’ <a href=01-lexical-syntax.html#id>id</a>}
+
+  <a name="Path"></a>Path              ::=  <a href=03-types.html#StableId>StableId</a>
+                      |  [<a href=01-lexical-syntax.html#id>id</a> ‘.’] ‘this’
+  <a name="StableId"></a>StableId          ::=  <a href=01-lexical-syntax.html#id>id</a>
+                      |  <a href=03-types.html#Path>Path</a> ‘.’ <a href=01-lexical-syntax.html#id>id</a>
+                      |  [<a href=01-lexical-syntax.html#id>id</a> ‘.’] ‘super’ [<a href=03-types.html#ClassQualifier>ClassQualifier</a>] ‘.’ <a href=01-lexical-syntax.html#id>id</a>
+  <a name="ClassQualifier"></a>ClassQualifier    ::=  ‘[’ <a href=01-lexical-syntax.html#id>id</a> ‘]’
+
+  <a name="Type"></a>Type              ::=  <a href=03-types.html#FunctionArgTypes>FunctionArgTypes</a> ‘=&gt;’ <a href=03-types.html#Type>Type</a>
+                      |  <a href=03-types.html#InfixType>InfixType</a> [<a href=03-types.html#ExistentialClause>ExistentialClause</a>]
+  <a name="FunctionArgTypes"></a>FunctionArgTypes  ::= <a href=03-types.html#InfixType>InfixType</a>
+                      | ‘(’ [ <a href=04-basic-declarations-and-definitions.html#ParamType>ParamType</a> {‘,’ <a href=04-basic-declarations-and-definitions.html#ParamType>ParamType</a> } ] ‘)’
+  <a name="ExistentialClause"></a>ExistentialClause ::=  ‘forSome’ ‘{’ <a href=03-types.html#ExistentialDcl>ExistentialDcl</a> {<a href=01-lexical-syntax.html#semi>semi</a> <a href=03-types.html#ExistentialDcl>ExistentialDcl</a>} ‘}’
+  <a name="ExistentialDcl"></a>ExistentialDcl    ::=  ‘type’ <a href=04-basic-declarations-and-definitions.html#TypeDcl>TypeDcl</a>
+                      |  ‘val’ <a href=04-basic-declarations-and-definitions.html#ValDcl>ValDcl</a>
+  <a name="InfixType"></a>InfixType         ::=  <a href=03-types.html#CompoundType>CompoundType</a> {<a href=01-lexical-syntax.html#id>id</a> [<t>nl</t>] <a href=03-types.html#CompoundType>CompoundType</a>}
+  <a name="CompoundType"></a>CompoundType      ::=  <a href=03-types.html#AnnotType>AnnotType</a> {‘with’ <a href=03-types.html#AnnotType>AnnotType</a>} [<a href=03-types.html#Refinement>Refinement</a>]
+                      |  <a href=03-types.html#Refinement>Refinement</a>
+  <a name="AnnotType"></a>AnnotType         ::=  <a href=03-types.html#SimpleType>SimpleType</a> {<a href=11-annotations.html#Annotation>Annotation</a>}
+  <a name="SimpleType"></a>SimpleType        ::=  <a href=03-types.html#SimpleType>SimpleType</a> <a href=03-types.html#TypeArgs>TypeArgs</a>
+                      |  <a href=03-types.html#SimpleType>SimpleType</a> ‘#’ <a href=01-lexical-syntax.html#id>id</a>
+                      |  <a href=03-types.html#StableId>StableId</a>
+                      |  <a href=03-types.html#Path>Path</a> ‘.’ ‘type’
+                      |  ‘(’ <a href=03-types.html#Types>Types</a> ‘)’
+  <a name="TypeArgs"></a>TypeArgs          ::=  ‘[’ <a href=03-types.html#Types>Types</a> ‘]’
+  <a name="Types"></a>Types             ::=  <a href=03-types.html#Type>Type</a> {‘,’ <a href=03-types.html#Type>Type</a>}
+  <a name="Refinement"></a>Refinement        ::=  [<t>nl</t>] ‘{’ <a href=03-types.html#RefineStat>RefineStat</a> {<a href=01-lexical-syntax.html#semi>semi</a> <a href=03-types.html#RefineStat>RefineStat</a>} ‘}’
+  <a name="RefineStat"></a>RefineStat        ::=  <a href=04-basic-declarations-and-definitions.html#Dcl>Dcl</a>
+                      |  ‘type’ <a href=04-basic-declarations-and-definitions.html#TypeDef>TypeDef</a>
+                      |
+  <a name="TypePat"></a>TypePat           ::=  <a href=03-types.html#Type>Type</a>
+
+  <a name="Ascription"></a>Ascription        ::=  ‘:’ <a href=03-types.html#InfixType>InfixType</a>
+                      |  ‘:’ <a href=11-annotations.html#Annotation>Annotation</a> {<a href=11-annotations.html#Annotation>Annotation</a>}
+                      |  ‘:’ ‘_’ ‘*’
+
+  <a name="Expr"></a>Expr              ::=  (<a href=06-expressions.html#Bindings>Bindings</a> | [‘implicit’] <a href=01-lexical-syntax.html#id>id</a> | ‘_’) ‘=&gt;’ <a href=06-expressions.html#Expr>Expr</a>
+                      |  <a href=06-expressions.html#Expr1>Expr1</a>
+  <a name="Expr1"></a>Expr1             ::=  ‘if’ ‘(’ <a href=06-expressions.html#Expr>Expr</a> ‘)’ {<t>nl</t>} <a href=06-expressions.html#Expr>Expr</a> [[<a href=01-lexical-syntax.html#semi>semi</a>] ‘else’ <a href=06-expressions.html#Expr>Expr</a>]
+                      |  ‘while’ ‘(’ <a href=06-expressions.html#Expr>Expr</a> ‘)’ {<t>nl</t>} <a href=06-expressions.html#Expr>Expr</a>
+                      |  ‘try’ (‘{’ <a href=06-expressions.html#Block>Block</a> ‘}’ | <a href=06-expressions.html#Expr>Expr</a>) [‘catch’ ‘{’ <a href=08-pattern-matching.html#CaseClauses>CaseClauses</a> ‘}’] [‘finally’ <a href=06-expressions.html#Expr>Expr</a>]
+                      |  ‘do’ <a href=06-expressions.html#Expr>Expr</a> [<a href=01-lexical-syntax.html#semi>semi</a>] ‘while’ ‘(’ <a href=06-expressions.html#Expr>Expr</a> ‘)’
+                      |  ‘for’ (‘(’ <a href=06-expressions.html#Enumerators>Enumerators</a> ‘)’ | ‘{’ <a href=06-expressions.html#Enumerators>Enumerators</a> ‘}’) {<t>nl</t>} [‘yield’] <a href=06-expressions.html#Expr>Expr</a>
+                      |  ‘throw’ <a href=06-expressions.html#Expr>Expr</a>
+                      |  ‘return’ [<a href=06-expressions.html#Expr>Expr</a>]
+                      |  [<a href=06-expressions.html#SimpleExpr>SimpleExpr</a> ‘.’] <a href=01-lexical-syntax.html#id>id</a> ‘=’ <a href=06-expressions.html#Expr>Expr</a>
+                      |  <a href=06-expressions.html#SimpleExpr1>SimpleExpr1</a> <a href=06-expressions.html#ArgumentExprs>ArgumentExprs</a> ‘=’ <a href=06-expressions.html#Expr>Expr</a>
+                      |  <a href=06-expressions.html#PostfixExpr>PostfixExpr</a>
+                      |  <a href=06-expressions.html#PostfixExpr>PostfixExpr</a> <a href=06-expressions.html#Ascription>Ascription</a>
+                      |  <a href=06-expressions.html#PostfixExpr>PostfixExpr</a> ‘match’ ‘{’ <a href=08-pattern-matching.html#CaseClauses>CaseClauses</a> ‘}’
+  <a name="PostfixExpr"></a>PostfixExpr       ::=  <a href=06-expressions.html#InfixExpr>InfixExpr</a> [<a href=01-lexical-syntax.html#id>id</a> [<t>nl</t>]]
+  <a name="InfixExpr"></a>InfixExpr         ::=  <a href=06-expressions.html#PrefixExpr>PrefixExpr</a>
+                      |  <a href=06-expressions.html#InfixExpr>InfixExpr</a> <a href=01-lexical-syntax.html#id>id</a> [<t>nl</t>] <a href=06-expressions.html#InfixExpr>InfixExpr</a>
+  <a name="PrefixExpr"></a>PrefixExpr        ::=  [‘-’ | ‘+’ | ‘~’ | ‘!’] <a href=06-expressions.html#SimpleExpr>SimpleExpr</a>
+  <a name="SimpleExpr"></a>SimpleExpr        ::=  ‘new’ (<a href=05-classes-and-objects.html#ClassTemplate>ClassTemplate</a> | <a href=05-classes-and-objects.html#TemplateBody>TemplateBody</a>)
+                      |  <a href=06-expressions.html#BlockExpr>BlockExpr</a>
+                      |  <a href=06-expressions.html#SimpleExpr1>SimpleExpr1</a> [‘_’]
+  <a name="SimpleExpr1"></a>SimpleExpr1       ::=  <a href=01-lexical-syntax.html#Literal>Literal</a>
+                      |  <a href=03-types.html#Path>Path</a>
+                      |  ‘_’
+                      |  ‘(’ [<a href=06-expressions.html#Exprs>Exprs</a>] ‘)’
+                      |  <a href=06-expressions.html#SimpleExpr>SimpleExpr</a> ‘.’ <a href=01-lexical-syntax.html#id>id</a>
+                      |  <a href=06-expressions.html#SimpleExpr>SimpleExpr</a> <a href=03-types.html#TypeArgs>TypeArgs</a>
+                      |  <a href=06-expressions.html#SimpleExpr1>SimpleExpr1</a> <a href=06-expressions.html#ArgumentExprs>ArgumentExprs</a>
+                      |  <a href=10-xml-expressions-and-patterns.html#XmlExpr>XmlExpr</a>
+  <a name="Exprs"></a>Exprs             ::=  <a href=06-expressions.html#Expr>Expr</a> {‘,’ <a href=06-expressions.html#Expr>Expr</a>}
+  <a name="ArgumentExprs"></a>ArgumentExprs     ::=  ‘(’ [<a href=06-expressions.html#Exprs>Exprs</a>] ‘)’
+                      |  ‘(’ [<a href=06-expressions.html#Exprs>Exprs</a> ‘,’] <a href=06-expressions.html#PostfixExpr>PostfixExpr</a> ‘:’ ‘_’ ‘*’ ‘)’
+                      |  [<t>nl</t>] <a href=06-expressions.html#BlockExpr>BlockExpr</a>
+  <a name="BlockExpr"></a>BlockExpr         ::=  ‘{’ <a href=08-pattern-matching.html#CaseClauses>CaseClauses</a> ‘}’
+                      |  ‘{’ <a href=06-expressions.html#Block>Block</a> ‘}’
+  <a name="Block"></a>Block             ::=  <a href=06-expressions.html#BlockStat>BlockStat</a> {<a href=01-lexical-syntax.html#semi>semi</a> <a href=06-expressions.html#BlockStat>BlockStat</a>} [<a href=06-expressions.html#ResultExpr>ResultExpr</a>]
+  <a name="BlockStat"></a>BlockStat         ::=  <a href=04-basic-declarations-and-definitions.html#Import>Import</a>
+                      |  {<a href=11-annotations.html#Annotation>Annotation</a>} [‘implicit’ | ‘lazy’] <a href=04-basic-declarations-and-definitions.html#Def>Def</a>
+                      |  {<a href=11-annotations.html#Annotation>Annotation</a>} {<a href=05-classes-and-objects.html#LocalModifier>LocalModifier</a>} <a href=05-classes-and-objects.html#TmplDef>TmplDef</a>
+                      |  <a href=06-expressions.html#Expr1>Expr1</a>
+                      |
+  <a name="ResultExpr"></a>ResultExpr        ::=  <a href=06-expressions.html#Expr1>Expr1</a>
+                      |  (<a href=06-expressions.html#Bindings>Bindings</a> | ([‘implicit’] <a href=01-lexical-syntax.html#id>id</a> | ‘_’) ‘:’ <a href=03-types.html#CompoundType>CompoundType</a>) ‘=&gt;’ <a href=06-expressions.html#Block>Block</a>
+
+  <a name="Enumerators"></a>Enumerators       ::=  <a href=06-expressions.html#Generator>Generator</a> {<a href=01-lexical-syntax.html#semi>semi</a> <a href=06-expressions.html#Generator>Generator</a>}
+  <a name="Generator"></a>Generator         ::=  <a href=08-pattern-matching.html#Pattern1>Pattern1</a> ‘&lt;-’ <a href=06-expressions.html#Expr>Expr</a> {[<a href=01-lexical-syntax.html#semi>semi</a>] <a href=06-expressions.html#Guard>Guard</a> | <a href=01-lexical-syntax.html#semi>semi</a> <a href=08-pattern-matching.html#Pattern1>Pattern1</a> ‘=’ <a href=06-expressions.html#Expr>Expr</a>}
+
+  <a name="CaseClauses"></a>CaseClauses       ::=  <a href=08-pattern-matching.html#CaseClause>CaseClause</a> { <a href=08-pattern-matching.html#CaseClause>CaseClause</a> }
+  <a name="CaseClause"></a>CaseClause        ::=  ‘case’ <a href=08-pattern-matching.html#Pattern>Pattern</a> [<a href=06-expressions.html#Guard>Guard</a>] ‘=&gt;’ <a href=06-expressions.html#Block>Block</a>
+  <a name="Guard"></a>Guard             ::=  ‘if’ <a href=06-expressions.html#PostfixExpr>PostfixExpr</a>
+
+  <a name="Pattern"></a>Pattern           ::=  <a href=08-pattern-matching.html#Pattern1>Pattern1</a> { ‘|’ <a href=08-pattern-matching.html#Pattern1>Pattern1</a> }
+  <a name="Pattern1"></a>Pattern1          ::=  <a href=01-lexical-syntax.html#varid>varid</a> ‘:’ <a href=08-pattern-matching.html#TypePat>TypePat</a>
+                      |  ‘_’ ‘:’ <a href=08-pattern-matching.html#TypePat>TypePat</a>
+                      |  <a href=08-pattern-matching.html#Pattern2>Pattern2</a>
+  <a name="Pattern2"></a>Pattern2          ::=  <a href=01-lexical-syntax.html#varid>varid</a> [‘@’ <a href=08-pattern-matching.html#Pattern3>Pattern3</a>]
+                      |  <a href=08-pattern-matching.html#Pattern3>Pattern3</a>
+  <a name="Pattern3"></a>Pattern3          ::=  <a href=08-pattern-matching.html#SimplePattern>SimplePattern</a>
+                      |  <a href=08-pattern-matching.html#SimplePattern>SimplePattern</a> { <a href=01-lexical-syntax.html#id>id</a> [<t>nl</t>] <a href=08-pattern-matching.html#SimplePattern>SimplePattern</a> }
+  <a name="SimplePattern"></a>SimplePattern     ::=  ‘_’
+                      |  <a href=01-lexical-syntax.html#varid>varid</a>
+                      |  <a href=01-lexical-syntax.html#Literal>Literal</a>
+                      |  <a href=03-types.html#StableId>StableId</a>
+                      |  <a href=03-types.html#StableId>StableId</a> ‘(’ [<a href=08-pattern-matching.html#Patterns>Patterns</a>] ‘)’
+                      |  <a href=03-types.html#StableId>StableId</a> ‘(’ [<a href=08-pattern-matching.html#Patterns>Patterns</a> ‘,’] [<a href=01-lexical-syntax.html#varid>varid</a> ‘@’] ‘_’ ‘*’ ‘)’
+                      |  ‘(’ [<a href=08-pattern-matching.html#Patterns>Patterns</a>] ‘)’
+                      |  <a href=10-xml-expressions-and-patterns.html#XmlPattern>XmlPattern</a>
+  <a name="Patterns"></a>Patterns          ::=  <a href=08-pattern-matching.html#Pattern>Pattern</a> [‘,’ <a href=08-pattern-matching.html#Patterns>Patterns</a>]
+                      |  ‘_’ ‘*’
+
+  <a name="TypeParamClause"></a>TypeParamClause   ::=  ‘[’ <a href=04-basic-declarations-and-definitions.html#VariantTypeParam>VariantTypeParam</a> {‘,’ <a href=04-basic-declarations-and-definitions.html#VariantTypeParam>VariantTypeParam</a>} ‘]’
+  <a name="FunTypeParamClause"></a>FunTypeParamClause::=  ‘[’ <a href=04-basic-declarations-and-definitions.html#TypeParam>TypeParam</a> {‘,’ <a href=04-basic-declarations-and-definitions.html#TypeParam>TypeParam</a>} ‘]’
+  <a name="VariantTypeParam"></a>VariantTypeParam  ::=  {<a href=11-annotations.html#Annotation>Annotation</a>} [‘+’ | ‘-’] <a href=04-basic-declarations-and-definitions.html#TypeParam>TypeParam</a>
+  <a name="TypeParam"></a>TypeParam         ::=  (<a href=01-lexical-syntax.html#id>id</a> | ‘_’) [<a href=04-basic-declarations-and-definitions.html#TypeParamClause>TypeParamClause</a>] [‘&gt;:’ <a href=03-types.html#Type>Type</a>] [‘&lt;:’ <a href=03-types.html#Type>Type</a>]
+                         {‘&lt;%’ <a href=03-types.html#Type>Type</a>} {‘:’ <a href=03-types.html#Type>Type</a>}
+  <a name="ParamClauses"></a>ParamClauses      ::=  {<a href=04-basic-declarations-and-definitions.html#ParamClause>ParamClause</a>} [[<t>nl</t>] ‘(’ ‘implicit’ <a href=04-basic-declarations-and-definitions.html#Params>Params</a> ‘)’]
+  <a name="ParamClause"></a>ParamClause       ::=  [<t>nl</t>] ‘(’ [<a href=04-basic-declarations-and-definitions.html#Params>Params</a>] ‘)’
+  <a name="Params"></a>Params            ::=  <a href=04-basic-declarations-and-definitions.html#Param>Param</a> {‘,’ <a href=04-basic-declarations-and-definitions.html#Param>Param</a>}
+  <a name="Param"></a>Param             ::=  {<a href=11-annotations.html#Annotation>Annotation</a>} <a href=01-lexical-syntax.html#id>id</a> [‘:’ <a href=04-basic-declarations-and-definitions.html#ParamType>ParamType</a>] [‘=’ <a href=06-expressions.html#Expr>Expr</a>]
+  <a name="ParamType"></a>ParamType         ::=  <a href=03-types.html#Type>Type</a>
+                      |  ‘=&gt;’ <a href=03-types.html#Type>Type</a>
+                      |  <a href=03-types.html#Type>Type</a> ‘*’
+  <a name="ClassParamClauses"></a>ClassParamClauses ::=  {<a href=05-classes-and-objects.html#ClassParamClause>ClassParamClause</a>}
+                         [[<t>nl</t>] ‘(’ ‘implicit’ <a href=05-classes-and-objects.html#ClassParams>ClassParams</a> ‘)’]
+  <a name="ClassParamClause"></a>ClassParamClause  ::=  [<t>nl</t>] ‘(’ [<a href=05-classes-and-objects.html#ClassParams>ClassParams</a>] ‘)’
+  <a name="ClassParams"></a>ClassParams       ::=  <a href=05-classes-and-objects.html#ClassParam>ClassParam</a> {‘,’ <a href=05-classes-and-objects.html#ClassParam>ClassParam</a>}
+  <a name="ClassParam"></a>ClassParam        ::=  {<a href=11-annotations.html#Annotation>Annotation</a>} {<a href=05-classes-and-objects.html#Modifier>Modifier</a>} [(‘val’ | ‘var’)]
+                         <a href=01-lexical-syntax.html#id>id</a> ‘:’ <a href=04-basic-declarations-and-definitions.html#ParamType>ParamType</a> [‘=’ <a href=06-expressions.html#Expr>Expr</a>]
+  <a name="Bindings"></a>Bindings          ::=  ‘(’ <a href=06-expressions.html#Binding>Binding</a> {‘,’ <a href=06-expressions.html#Binding>Binding</a>} ‘)’
+  <a name="Binding"></a>Binding           ::=  (<a href=01-lexical-syntax.html#id>id</a> | ‘_’) [‘:’ <a href=03-types.html#Type>Type</a>]
+
+  <a name="Modifier"></a>Modifier          ::=  <a href=05-classes-and-objects.html#LocalModifier>LocalModifier</a>
+                      |  <a href=05-classes-and-objects.html#AccessModifier>AccessModifier</a>
+                      |  ‘override’
+  <a name="LocalModifier"></a>LocalModifier     ::=  ‘abstract’
+                      |  ‘final’
+                      |  ‘sealed’
+                      |  ‘implicit’
+                      |  ‘lazy’
+  <a name="AccessModifier"></a>AccessModifier    ::=  (‘private’ | ‘protected’) [<a href=05-classes-and-objects.html#AccessQualifier>AccessQualifier</a>]
+  <a name="AccessQualifier"></a>AccessQualifier   ::=  ‘[’ (<a href=01-lexical-syntax.html#id>id</a> | ‘this’) ‘]’
+
+  <a name="Annotation"></a>Annotation        ::=  ‘@’ <a href=03-types.html#SimpleType>SimpleType</a> {<a href=06-expressions.html#ArgumentExprs>ArgumentExprs</a>}
+  <a name="ConstrAnnotation"></a>ConstrAnnotation  ::=  ‘@’ <a href=03-types.html#SimpleType>SimpleType</a> <a href=06-expressions.html#ArgumentExprs>ArgumentExprs</a>
+
+  <a name="TemplateBody"></a>TemplateBody      ::=  [<t>nl</t>] ‘{’ [<a href=05-classes-and-objects.html#SelfType>SelfType</a>] <a href=06-expressions.html#TemplateStat>TemplateStat</a> {<a href=01-lexical-syntax.html#semi>semi</a> <a href=06-expressions.html#TemplateStat>TemplateStat</a>} ‘}’
+  <a name="TemplateStat"></a>TemplateStat      ::=  <a href=04-basic-declarations-and-definitions.html#Import>Import</a>
+                      |  {<a href=11-annotations.html#Annotation>Annotation</a> [<t>nl</t>]} {<a href=05-classes-and-objects.html#Modifier>Modifier</a>} <a href=04-basic-declarations-and-definitions.html#Def>Def</a>
+                      |  {<a href=11-annotations.html#Annotation>Annotation</a> [<t>nl</t>]} {<a href=05-classes-and-objects.html#Modifier>Modifier</a>} <a href=04-basic-declarations-and-definitions.html#Dcl>Dcl</a>
+                      |  <a href=06-expressions.html#Expr>Expr</a>
+                      |
+  <a name="SelfType"></a>SelfType          ::=  <a href=01-lexical-syntax.html#id>id</a> [‘:’ <a href=03-types.html#Type>Type</a>] ‘=&gt;’
+                      |  ‘this’ ‘:’ <a href=03-types.html#Type>Type</a> ‘=&gt;’
+
+  <a name="Import"></a>Import            ::=  ‘import’ <a href=04-basic-declarations-and-definitions.html#ImportExpr>ImportExpr</a> {‘,’ <a href=04-basic-declarations-and-definitions.html#ImportExpr>ImportExpr</a>}
+  <a name="ImportExpr"></a>ImportExpr        ::=  <a href=03-types.html#StableId>StableId</a> ‘.’ (<a href=01-lexical-syntax.html#id>id</a> | ‘_’ | <a href=04-basic-declarations-and-definitions.html#ImportSelectors>ImportSelectors</a>)
+  <a name="ImportSelectors"></a>ImportSelectors   ::=  ‘{’ {<a href=04-basic-declarations-and-definitions.html#ImportSelector>ImportSelector</a> ‘,’} (<a href=04-basic-declarations-and-definitions.html#ImportSelector>ImportSelector</a> | ‘_’) ‘}’
+  <a name="ImportSelector"></a>ImportSelector    ::=  <a href=01-lexical-syntax.html#id>id</a> [‘=&gt;’ <a href=01-lexical-syntax.html#id>id</a> | ‘=&gt;’ ‘_’]
+
+  <a name="Dcl"></a>Dcl               ::=  ‘val’ <a href=04-basic-declarations-and-definitions.html#ValDcl>ValDcl</a>
+                      |  ‘var’ <a href=04-basic-declarations-and-definitions.html#VarDcl>VarDcl</a>
+                      |  ‘def’ <a href=04-basic-declarations-and-definitions.html#FunDcl>FunDcl</a>
+                      |  ‘type’ {<t>nl</t>} <a href=04-basic-declarations-and-definitions.html#TypeDcl>TypeDcl</a>
+
+  <a name="ValDcl"></a>ValDcl            ::=  <a href=04-basic-declarations-and-definitions.html#ids>ids</a> ‘:’ <a href=03-types.html#Type>Type</a>
+  <a name="VarDcl"></a>VarDcl            ::=  <a href=04-basic-declarations-and-definitions.html#ids>ids</a> ‘:’ <a href=03-types.html#Type>Type</a>
+  <a name="FunDcl"></a>FunDcl            ::=  <a href=04-basic-declarations-and-definitions.html#FunSig>FunSig</a> [‘:’ <a href=03-types.html#Type>Type</a>]
+  <a name="FunSig"></a>FunSig            ::=  <a href=01-lexical-syntax.html#id>id</a> [<a href=04-basic-declarations-and-definitions.html#FunTypeParamClause>FunTypeParamClause</a>] <a href=04-basic-declarations-and-definitions.html#ParamClauses>ParamClauses</a>
+  <a name="TypeDcl"></a>TypeDcl           ::=  <a href=01-lexical-syntax.html#id>id</a> [<a href=04-basic-declarations-and-definitions.html#TypeParamClause>TypeParamClause</a>] [‘&gt;:’ <a href=03-types.html#Type>Type</a>] [‘&lt;:’ <a href=03-types.html#Type>Type</a>]
+
+  <a name="PatVarDef"></a>PatVarDef         ::=  ‘val’ <a href=04-basic-declarations-and-definitions.html#PatDef>PatDef</a>
+                      |  ‘var’ <a href=04-basic-declarations-and-definitions.html#VarDef>VarDef</a>
+  <a name="Def"></a>Def               ::=  <a href=04-basic-declarations-and-definitions.html#PatVarDef>PatVarDef</a>
+                      |  ‘def’ <a href=04-basic-declarations-and-definitions.html#FunDef>FunDef</a>
+                      |  ‘type’ {<t>nl</t>} <a href=04-basic-declarations-and-definitions.html#TypeDef>TypeDef</a>
+                      |  <a href=05-classes-and-objects.html#TmplDef>TmplDef</a>
+  <a name="PatDef"></a>PatDef            ::=  <a href=08-pattern-matching.html#Pattern2>Pattern2</a> {‘,’ <a href=08-pattern-matching.html#Pattern2>Pattern2</a>} [‘:’ <a href=03-types.html#Type>Type</a>] ‘=’ <a href=06-expressions.html#Expr>Expr</a>
+  <a name="VarDef"></a>VarDef            ::=  <a href=04-basic-declarations-and-definitions.html#PatDef>PatDef</a>
+                      |  <a href=04-basic-declarations-and-definitions.html#ids>ids</a> ‘:’ <a href=03-types.html#Type>Type</a> ‘=’ ‘_’
+  <a name="FunDef"></a>FunDef            ::=  <a href=04-basic-declarations-and-definitions.html#FunSig>FunSig</a> [‘:’ <a href=03-types.html#Type>Type</a>] ‘=’ <a href=06-expressions.html#Expr>Expr</a>
+                      |  <a href=04-basic-declarations-and-definitions.html#FunSig>FunSig</a> [<t>nl</t>] ‘{’ <a href=06-expressions.html#Block>Block</a> ‘}’
+                      |  ‘this’ <a href=04-basic-declarations-and-definitions.html#ParamClause>ParamClause</a> <a href=04-basic-declarations-and-definitions.html#ParamClauses>ParamClauses</a>
+                         (‘=’ <a href=05-classes-and-objects.html#ConstrExpr>ConstrExpr</a> | [<t>nl</t>] <a href=05-classes-and-objects.html#ConstrBlock>ConstrBlock</a>)
+  <a name="TypeDef"></a>TypeDef           ::=  <a href=01-lexical-syntax.html#id>id</a> [<a href=04-basic-declarations-and-definitions.html#TypeParamClause>TypeParamClause</a>] ‘=’ <a href=03-types.html#Type>Type</a>
+
+  <a name="TmplDef"></a>TmplDef           ::=  [‘case’] ‘class’ <a href=05-classes-and-objects.html#ClassDef>ClassDef</a>
+                      |  [‘case’] ‘object’ <a href=05-classes-and-objects.html#ObjectDef>ObjectDef</a>
+                      |  ‘trait’ <a href=05-classes-and-objects.html#TraitDef>TraitDef</a>
+  <a name="ClassDef"></a>ClassDef          ::=  <a href=01-lexical-syntax.html#id>id</a> [<a href=04-basic-declarations-and-definitions.html#TypeParamClause>TypeParamClause</a>] {<a href=11-annotations.html#ConstrAnnotation>ConstrAnnotation</a>} [<a href=05-classes-and-objects.html#AccessModifier>AccessModifier</a>]
+                         <a href=05-classes-and-objects.html#ClassParamClauses>ClassParamClauses</a> <a href=05-classes-and-objects.html#ClassTemplateOpt>ClassTemplateOpt</a>
+  <a name="TraitDef"></a>TraitDef          ::=  <a href=01-lexical-syntax.html#id>id</a> [<a href=04-basic-declarations-and-definitions.html#TypeParamClause>TypeParamClause</a>] <a href=05-classes-and-objects.html#TraitTemplateOpt>TraitTemplateOpt</a>
+  <a name="ObjectDef"></a>ObjectDef         ::=  <a href=01-lexical-syntax.html#id>id</a> <a href=05-classes-and-objects.html#ClassTemplateOpt>ClassTemplateOpt</a>
+  <a name="ClassTemplateOpt"></a>ClassTemplateOpt  ::=  ‘extends’ <a href=05-classes-and-objects.html#ClassTemplate>ClassTemplate</a> | [[‘extends’] <a href=05-classes-and-objects.html#TemplateBody>TemplateBody</a>]
+  <a name="TraitTemplateOpt"></a>TraitTemplateOpt  ::=  ‘extends’ <a href=05-classes-and-objects.html#TraitTemplate>TraitTemplate</a> | [[‘extends’] <a href=05-classes-and-objects.html#TemplateBody>TemplateBody</a>]
+  <a name="ClassTemplate"></a>ClassTemplate     ::=  [<a href=05-classes-and-objects.html#EarlyDefs>EarlyDefs</a>] <a href=05-classes-and-objects.html#ClassParents>ClassParents</a> [<a href=05-classes-and-objects.html#TemplateBody>TemplateBody</a>]
+  <a name="TraitTemplate"></a>TraitTemplate     ::=  [<a href=05-classes-and-objects.html#EarlyDefs>EarlyDefs</a>] <a href=05-classes-and-objects.html#TraitParents>TraitParents</a> [<a href=05-classes-and-objects.html#TemplateBody>TemplateBody</a>]
+  <a name="ClassParents"></a>ClassParents      ::=  <a href=05-classes-and-objects.html#Constr>Constr</a> {‘with’ <a href=03-types.html#AnnotType>AnnotType</a>}
+  <a name="TraitParents"></a>TraitParents      ::=  <a href=03-types.html#AnnotType>AnnotType</a> {‘with’ <a href=03-types.html#AnnotType>AnnotType</a>}
+  <a name="Constr"></a>Constr            ::=  <a href=03-types.html#AnnotType>AnnotType</a> {<a href=06-expressions.html#ArgumentExprs>ArgumentExprs</a>}
+  <a name="EarlyDefs"></a>EarlyDefs         ::= ‘{’ [<a href=05-classes-and-objects.html#EarlyDef>EarlyDef</a> {<a href=01-lexical-syntax.html#semi>semi</a> <a href=05-classes-and-objects.html#EarlyDef>EarlyDef</a>}] ‘}’ ‘with’
+  <a name="EarlyDef"></a>EarlyDef          ::=  {<a href=11-annotations.html#Annotation>Annotation</a> [<t>nl</t>]} {<a href=05-classes-and-objects.html#Modifier>Modifier</a>} <a href=04-basic-declarations-and-definitions.html#PatVarDef>PatVarDef</a>
+
+  <a name="ConstrExpr"></a>ConstrExpr        ::=  <a href=05-classes-and-objects.html#SelfInvocation>SelfInvocation</a>
+                      |  <a href=05-classes-and-objects.html#ConstrBlock>ConstrBlock</a>
+  <a name="ConstrBlock"></a>ConstrBlock       ::=  ‘{’ <a href=05-classes-and-objects.html#SelfInvocation>SelfInvocation</a> {<a href=01-lexical-syntax.html#semi>semi</a> <a href=06-expressions.html#BlockStat>BlockStat</a>} ‘}’
+  <a name="SelfInvocation"></a>SelfInvocation    ::=  ‘this’ <a href=06-expressions.html#ArgumentExprs>ArgumentExprs</a> {<a href=06-expressions.html#ArgumentExprs>ArgumentExprs</a>}
+
+  <a name="TopStatSeq"></a>TopStatSeq        ::=  <a href=09-top-level-definitions.html#TopStat>TopStat</a> {<a href=01-lexical-syntax.html#semi>semi</a> <a href=09-top-level-definitions.html#TopStat>TopStat</a>}
+  <a name="TopStat"></a>TopStat           ::=  {<a href=11-annotations.html#Annotation>Annotation</a> [<t>nl</t>]} {<a href=05-classes-and-objects.html#Modifier>Modifier</a>} <a href=05-classes-and-objects.html#TmplDef>TmplDef</a>
+                      |  <a href=04-basic-declarations-and-definitions.html#Import>Import</a>
+                      |  <a href=09-top-level-definitions.html#Packaging>Packaging</a>
+                      |  <a href=09-top-level-definitions.html#PackageObject>PackageObject</a>
+                      |
+  <a name="Packaging"></a>Packaging         ::=  ‘package’ <a href=09-top-level-definitions.html#QualId>QualId</a> [<t>nl</t>] ‘{’ <a href=09-top-level-definitions.html#TopStatSeq>TopStatSeq</a> ‘}’
+  <a name="PackageObject"></a>PackageObject     ::=  ‘package’ ‘object’ <a href=05-classes-and-objects.html#ObjectDef>ObjectDef</a>
+
+  <a name="CompilationUnit"></a>CompilationUnit   ::=  {‘package’ <a href=09-top-level-definitions.html#QualId>QualId</a> <a href=01-lexical-syntax.html#semi>semi</a>} <a href=09-top-level-definitions.html#TopStatSeq>TopStatSeq</a>
+</code></pre></div>
+<!-- TODO add:
+SeqPattern ::= ...
+
+SimplePattern    ::= StableId  [TypePatArgs] [‘(’ [SeqPatterns] ‘)’]
+TypePatArgs ::= ‘[’ TypePatArg {‘,’ TypePatArg} ‘]’
+TypePatArg    ::=  ‘_’ |   varid}
+
+-->
+
+  </main>
+
+  <script src="public/scripts/toc.js"></script>
+  <script src="public/scripts/highlight.pack.js"></script>
+  <script src="public/scripts/main.js"></script>
+</body>
+</html>

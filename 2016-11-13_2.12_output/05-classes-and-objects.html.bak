@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+
+  <link rel="icon" type="image/png" href="public/favicon.ico">
+  <link rel="shortcut icon" type="image/png" href="public/favicon.ico">
+
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      skipTags: ['script', 'noscript', 'style', 'textarea'],
+      processEscapes: true
+    }
+  });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/2.6-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+  <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.2/styles/default.min.css">
+  <!-- need to use include to see value of page.chapter variable -->
+  <style type="text/css">
+    h1 {
+  /* must reset here */
+  counter-reset: chapter 5;
+}
+h1:before {
+  /* and must reset again here */
+  counter-reset: chapter 5;
+  content: "Chapter " counter(chapter);
+  display: block;
+}
+
+h2 {
+  /* must increment here */
+  counter-increment: section;
+  counter-reset: subsection;
+}
+h2:before {
+  /* and must reset again here */
+  counter-reset: chapter 5;
+
+  content: counter(chapter) "." counter(section) ;
+  display: inline;
+  margin-right: 1em;
+}
+h2:after {
+  /* can only have one counter-reset per tag, so can't do it in h2/h2:before... */
+  counter-reset: example;
+}
+
+h3 {
+  /* must increment here */
+  counter-increment: subsection;
+}
+h3:before {
+  /* and must reset again here */
+  counter-reset: chapter 5;
+
+  content: counter(chapter) "." counter(section) "." counter(subsection);
+  display: inline;
+  margin-right: 1em;
+}
+h3[id*='example'] {
+  /* must increment here */
+  counter-increment: example;
+  display: inline;
+}
+h3[id*='example']:before {
+  /* and must reset again here */
+  counter-reset: chapter 5;
+
+  content: "Example " counter(chapter) "." counter(section) "." counter(example);
+  display: inline;
+  margin-right: 1em;
+}
+
+.no-numbering, .no-numbering:before, .no-numbering:after {
+  content: normal;
+  counter-reset: none;
+  counter-increment: none;
+}
+
+  </style>
+  <link rel="stylesheet" type="text/css" href="public/stylesheets/screen.css">
+  <link rel="stylesheet" type="text/css" media="(max-width: 1400px), (orientation: portrait)" href="public/stylesheets/screen-small.css">
+  <link rel="stylesheet" type="text/css" media="print" href="public/stylesheets/print.css">
+  <link rel="stylesheet" type="text/css" href="public/stylesheets/fonts.css">
+  <title>Classes & Objects</title>
+</head>
+
+<body>
+  <header>
+    <nav id="chapters"><a id="github" href="https://github.com/scala/scala/tree/2.12.x/spec"><img src="public/images/github-logo@2x.png" alt="Edit at GitHub"></a><a href="01-lexical-syntax.html">1 Lexical Syntax</a><a href="02-identifiers-names-and-scopes.html">2 Identifiers, Names & Scopes</a><a href="03-types.html">3 Types</a><a href="04-basic-declarations-and-definitions.html">4 Basic Declarations & Definitions</a><a href="05-classes-and-objects.html">5 Classes & Objects</a><a href="06-expressions.html">6 Expressions</a><a href="07-implicits.html">7 Implicits</a><a href="08-pattern-matching.html">8 Pattern Matching</a><a href="09-top-level-definitions.html">9 Top-Level Definitions</a><a href="10-xml-expressions-and-patterns.html">10 XML</a><a href="11-annotations.html">11 Annotations</a><a href="12-the-scala-standard-library.html">12 Standard Library</a><a href="13-syntax-summary.html">13 Syntax Summary</a><a href="14-references.html">14 References</a><a href="15-changelog.html">15 Changelog</a></nav>
+  </header>
+  <aside class="left"><nav id="toc"></nav></aside>
+
+  <main id="content">
+<h1 id="classes-and-objects">Classes and Objects</h1>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="TmplDef"></a>TmplDef          ::= [‘case’] ‘class’ <t>ClassDef</t>
+                  |  [‘case’] ‘object’ <t>ObjectDef</t>
+                  |  ‘trait’ <t>TraitDef</t>
+</code></pre></div>
+<p><a href="05-classes-and-objects.html#class-definitions">Classes</a> and <a href="05-classes-and-objects.html#object-definitions">objects</a>
+are both defined in terms of <em>templates</em>.</p>
+
+<h2 id="templates">Templates</h2>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="ClassTemplate"></a>ClassTemplate   ::=  [<t>EarlyDefs</t>] <t>ClassParents</t> [<t>TemplateBody</t>]
+<a name="TraitTemplate"></a>TraitTemplate   ::=  [<t>EarlyDefs</t>] <t>TraitParents</t> [<t>TemplateBody</t>]
+<a name="ClassParents"></a>ClassParents    ::=  <t>Constr</t> {‘with’ <t>AnnotType</t>}
+<a name="TraitParents"></a>TraitParents    ::=  <t>AnnotType</t> {‘with’ <t>AnnotType</t>}
+<a name="TemplateBody"></a>TemplateBody    ::=  [<t>nl</t>] ‘{’ [<t>SelfType</t>] <t>TemplateStat</t> {<t>semi</t> <t>TemplateStat</t>} ‘}’
+<a name="SelfType"></a>SelfType        ::=  <t>id</t> [‘:’ <t>Type</t>] ‘=&gt;’
+                 |   <t>this</t> ‘:’ <t>Type</t> ‘=&gt;’
+</code></pre></div>
+<p>A <em>template</em> defines the type signature, behavior and initial state of a
+trait or class of objects or of a single object. Templates form part of
+instance creation expressions, class definitions, and object
+definitions.  A template
+<code>$sc$ with $mt_1$ with $\ldots$ with $mt_n$ { $\mathit{stats}$ }</code>
+consists of a constructor invocation $sc$
+which defines the template&#39;s <em>superclass</em>, trait references
+<code>$mt_1 , \ldots , mt_n$</code> $(n \geq 0)$, which define the
+template&#39;s <em>traits</em>, and a statement sequence $\mathit{stats}$ which
+contains initialization code and additional member definitions for the
+template.</p>
+
+<p>Each trait reference $mt_i$ must denote a <a href="05-classes-and-objects.html#traits">trait</a>.
+By contrast, the superclass constructor $sc$ normally refers to a
+class which is not a trait. It is possible to write a list of
+parents that starts with a trait reference, e.g.
+<code>$mt_1$ with $\ldots$ with $mt_n$</code>. In that case the list
+of parents is implicitly extended to include the supertype of $mt_1$
+as first parent type. The new supertype must have at least one
+constructor that does not take parameters.  In the following, we will
+always assume that this implicit extension has been performed, so that
+the first parent class of a template is a regular superclass
+constructor, not a trait reference.</p>
+
+<p>The list of parents of a template must be well-formed. This means that
+the class denoted by the superclass constructor $sc$ must be a
+subclass of the superclasses of all the traits $mt_1 , \ldots , mt_n$.
+In other words, the non-trait classes inherited by a template form a
+chain in the inheritance hierarchy which starts with the template&#39;s
+superclass.</p>
+
+<p>The <em>least proper supertype</em> of a template is the class type or
+<a href="03-types.html#compound-types">compound type</a> consisting of all its parent
+class types.</p>
+
+<p>The statement sequence $\mathit{stats}$ contains member definitions that
+define new members or overwrite members in the parent classes.  If the
+template forms part of an abstract class or trait definition, the
+statement part $\mathit{stats}$ may also contain declarations of abstract
+members. If the template forms part of a concrete class definition,
+$\mathit{stats}$ may still contain declarations of abstract type members, but
+not of abstract term members.  Furthermore, $\mathit{stats}$ may in any case
+also contain expressions; these are executed in the order they are
+given as part of the initialization of a template.</p>
+
+<p>The sequence of template statements may be prefixed with a formal
+parameter definition and an arrow, e.g. <code>$x$ =&gt;</code>, or
+<code>$x$:$T$ =&gt;</code>.  If a formal parameter is given, it can be
+used as an alias for the reference <code>this</code> throughout the
+body of the template.
+If the formal parameter comes with a type $T$, this definition affects
+the <em>self type</em> $S$ of the underlying class or object as follows:  Let $C$ be the type
+of the class or trait or object defining the template.
+If a type $T$ is given for the formal self parameter, $S$
+is the greatest lower bound of $T$ and $C$.
+If no type $T$ is given, $S$ is just $C$.
+Inside the template, the type of <code>this</code> is assumed to be $S$.</p>
+
+<p>The self type of a class or object must conform to the self types of
+all classes which are inherited by the template $t$.</p>
+
+<p>A second form of self type annotation reads just
+<code>this: $S$ =&gt;</code>. It prescribes the type $S$ for <code>this</code>
+without introducing an alias name for it.</p>
+
+<h6 id="example">Example</h6>
+
+<p>Consider the following class definitions:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">class Base extends Object {}
+trait Mixin extends Base {}
+object O extends Mixin {}
+</code></pre></div>
+<p>In this case, the definition of <code>O</code> is expanded to:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">object O extends Base with Mixin {}
+</code></pre></div>
+<!-- TODO: Make all references to Java generic -->
+
+<p><strong>Inheriting from Java Types</strong> A template may have a Java class as its superclass and Java interfaces as its
+mixins.</p>
+
+<p><strong>Template Evaluation</strong> Consider a template <code>$sc$ with $mt_1$ with $mt_n$ { $\mathit{stats}$ }</code>.</p>
+
+<p>If this is the template of a <a href="05-classes-and-objects.html#traits">trait</a> then its <em>mixin-evaluation</em>
+consists of an evaluation of the statement sequence $\mathit{stats}$.</p>
+
+<p>If this is not a template of a trait, then its <em>evaluation</em>
+consists of the following steps.</p>
+
+<ul>
+<li>First, the superclass constructor $sc$ is
+<a href="05-classes-and-objects.html#constructor-invocations">evaluated</a>.</li>
+<li>Then, all base classes in the template&#39;s <a href="05-classes-and-objects.html#class-linearization">linearization</a>
+up to the template&#39;s superclass denoted by $sc$ are
+mixin-evaluated. Mixin-evaluation happens in reverse order of
+occurrence in the linearization.</li>
+<li>Finally the statement sequence $\mathit{stats}\,$ is evaluated.</li>
+</ul>
+
+<h6 id="delayed-initialization">Delayed Initialization</h6>
+
+<p>The initialization code of an object or class (but not a trait) that follows
+the superclass
+constructor invocation and the mixin-evaluation of the template&#39;s base
+classes is passed to a special hook, which is inaccessible from user
+code. Normally, that hook simply executes the code that is passed to
+it. But templates inheriting the <code>scala.DelayedInit</code> trait
+can override the hook by re-implementing the <code>delayedInit</code>
+method, which is defined as follows:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">def delayedInit(body: =&gt; Unit)
+</code></pre></div>
+<h3 id="constructor-invocations">Constructor Invocations</h3>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="Constr"></a>Constr  ::=  <t>AnnotType</t> {‘(’ [<t>Exprs</t>] ‘)’}
+</code></pre></div>
+<p>Constructor invocations define the type, members, and initial state of
+objects created by an instance creation expression, or of parts of an
+object&#39;s definition which are inherited by a class or object
+definition. A constructor invocation is a function application
+<code>$x$.$c$[$\mathit{targs}$]($\mathit{args}_1$)$\ldots$($\mathit{args}_n$)</code>, where $x$ is a
+<a href="03-types.html#paths">stable identifier</a>, $c$ is a type name which either designates a
+class or defines an alias type for one, $\mathit{targs}$ is a type argument
+list, $\mathit{args}_1 , \ldots , \mathit{args}_n$ are argument lists, and there is a
+constructor of that class which is <a href="06-expressions.html#function-applications">applicable</a>
+to the given arguments. If the constructor invocation uses named or
+default arguments, it is transformed into a block expression using the
+same transformation as described <a href="sec:named-default">here</a>.</p>
+
+<p>The prefix <code>$x$.</code> can be omitted.  A type argument list
+can be given only if the class $c$ takes type parameters.  Even then
+it can be omitted, in which case a type argument list is synthesized
+using <a href="06-expressions.html#local-type-inference">local type inference</a>. If no explicit
+arguments are given, an empty list <code>()</code> is implicitly supplied.</p>
+
+<p>An evaluation of a constructor invocation
+<code>$x$.$c$[$\mathit{targs}$]($\mathit{args}_1$)$\ldots$($\mathit{args}_n$)</code>
+consists of the following steps:</p>
+
+<ul>
+<li>First, the prefix $x$ is evaluated.</li>
+<li>Then, the arguments $\mathit{args}_1 , \ldots , \mathit{args}_n$ are evaluated from
+left to right.</li>
+<li>Finally, the class being constructed is initialized by evaluating the
+template of the class referred to by $c$.</li>
+</ul>
+
+<h3 id="class-linearization">Class Linearization</h3>
+
+<p>The classes reachable through transitive closure of the direct
+inheritance relation from a class $C$ are called the <em>base classes</em> of $C$.  Because of mixins, the inheritance relationship
+on base classes forms in general a directed acyclic graph. A
+linearization of this graph is defined as follows.</p>
+
+<h6 id="definition-linearization">Definition: linearization</h6>
+
+<p>Let $C$ be a class with template
+<code>$C_1$ with ... with $C_n$ { $\mathit{stats}$ }</code>.
+The <em>linearization</em> of $C$, $\mathcal{L}(C)$ is defined as follows:</p>
+
+<p>$$\mathcal{L}(C) = C, \mathcal{L}(C_n) \; \vec{+} \; \ldots \; \vec{+} \; \mathcal{L}(C_1)$$</p>
+
+<p>Here $\vec{+}$ denotes concatenation where elements of the right operand
+replace identical elements of the left operand:</p>
+
+<p>$$
+\begin{array}{lcll}
+{a, A} \;\vec{+}\; B &amp;=&amp; a, (A \;\vec{+}\; B)  &amp;{\bf if} \; a \not\in B \\
+                       &amp;=&amp; A \;\vec{+}\; B       &amp;{\bf if} \; a \in B
+\end{array}
+$$</p>
+
+<h6 id="example">Example</h6>
+
+<p>Consider the following class definitions.</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">abstract class AbsIterator extends AnyRef { ... }
+trait RichIterator extends AbsIterator { ... }
+class StringIterator extends AbsIterator { ... }
+class Iter extends StringIterator with RichIterator { ... }
+</code></pre></div>
+<p>Then the linearization of class <code>Iter</code> is</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">{ Iter, RichIterator, StringIterator, AbsIterator, AnyRef, Any }
+</code></pre></div>
+<p>Note that the linearization of a class refines the inheritance
+relation: if $C$ is a subclass of $D$, then $C$ precedes $D$ in any
+linearization where both $C$ and $D$ occur.
+<a href="05-classes-and-objects.html#definition:-linearization">Linearization</a> also satisfies the property that
+a linearization of a class always contains the linearization of its direct superclass as a suffix.</p>
+
+<p>For instance, the linearization of <code>StringIterator</code> is</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">{ StringIterator, AbsIterator, AnyRef, Any }
+</code></pre></div>
+<p>which is a suffix of the linearization of its subclass <code>Iter</code>.
+The same is not true for the linearization of mixins.
+For instance, the linearization of <code>RichIterator</code> is</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">{ RichIterator, AbsIterator, AnyRef, Any }
+</code></pre></div>
+<p>which is not a suffix of the linearization of <code>Iter</code>.</p>
+
+<h3 id="class-members">Class Members</h3>
+
+<p>A class $C$ defined by a template <code>$C_1$ with $\ldots$ with $C_n$ { $\mathit{stats}$ }</code>
+can define members in its statement sequence
+$\mathit{stats}$ and can inherit members from all parent classes.  Scala
+adopts Java and C#&#39;s conventions for static overloading of
+methods. It is thus possible that a class defines and/or inherits
+several methods with the same name.  To decide whether a defined
+member of a class $C$ overrides a member of a parent class, or whether
+the two co-exist as overloaded variants in $C$, Scala uses the
+following definition of <em>matching</em> on members:</p>
+
+<h6 id="definition-matching">Definition: matching</h6>
+
+<p>A member definition $M$ <em>matches</em> a member definition $M&#39;$, if $M$
+and $M&#39;$ bind the same name, and one of following holds.</p>
+
+<ol>
+<li>Neither $M$ nor $M&#39;$ is a method definition.</li>
+<li>$M$ and $M&#39;$ define both monomorphic methods with equivalent argument types.</li>
+<li>$M$ defines a parameterless method and $M&#39;$ defines a method
+with an empty parameter list <code>()</code> or <em>vice versa</em>.</li>
+<li>$M$ and $M&#39;$ define both polymorphic methods with
+equal number of argument types $\overline T$, $\overline T&#39;$
+and equal numbers of type parameters
+$\overline t$, $\overline t&#39;$, say, and  $\overline T&#39; = [\overline t&#39;/\overline t]\overline T$.</li>
+</ol>
+
+<!--
+every argument type
+$T_i$ of $M$ is equal to the corresponding argument type $T`_i$ of
+$M`$ where every occurrence of a type parameter $t`$ of $M`$ has been replaced by the corresponding type parameter $t$ of $M$.
+-->
+
+<p>Member definitions fall into two categories: concrete and abstract.
+Members of class $C$ are either <em>directly defined</em> (i.e. they appear in
+$C$&#39;s statement sequence $\mathit{stats}$) or they are <em>inherited</em>.  There are two rules
+that determine the set of members of a class, one for each category:</p>
+
+<p>A <em>concrete member</em> of a class $C$ is any concrete definition $M$ in
+some class $C_i \in \mathcal{L}(C)$, except if there is a preceding class
+$C_j \in \mathcal{L}(C)$ where $j &lt; i$ which directly defines a concrete
+member $M&#39;$ matching $M$.</p>
+
+<p>An <em>abstract member</em> of a class $C$ is any abstract definition $M$
+in some class $C_i \in \mathcal{L}(C)$, except if $C$ contains already a
+concrete member $M&#39;$ matching $M$, or if there is a preceding class
+$C_j \in \mathcal{L}(C)$ where $j &lt; i$ which directly defines an abstract
+member $M&#39;$ matching $M$.</p>
+
+<p>This definition also determines the <a href="05-classes-and-objects.html#overriding">overriding</a> relationships
+between matching members of a class $C$ and its parents.
+First, a concrete definition always overrides an abstract definition.
+Second, for definitions $M$ and $M$&#39; which are both concrete or both abstract,
+$M$ overrides $M&#39;$ if $M$ appears in a class that precedes (in the
+linearization of $C$) the class in which $M&#39;$ is defined.</p>
+
+<p>It is an error if a template directly defines two matching members. It
+is also an error if a template contains two members (directly defined
+or inherited) with the same name and the same <a href="03-types.html#type-erasure">erased type</a>.
+Finally, a template is not allowed to contain two methods (directly
+defined or inherited) with the same name which both define default arguments.</p>
+
+<h6 id="example">Example</h6>
+
+<p>Consider the trait definitions:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">trait A { def f: Int }
+trait B extends A { def f: Int = 1 ; def g: Int = 2 ; def h: Int = 3 }
+trait C extends A { override def f: Int = 4 ; def g: Int }
+trait D extends B with C { def h: Int }
+</code></pre></div>
+<p>Then trait <code>D</code> has a directly defined abstract member <code>h</code>. It
+inherits member <code>f</code> from trait <code>C</code> and member <code>g</code> from
+trait <code>B</code>.</p>
+
+<h3 id="overriding">Overriding</h3>
+
+<!-- TODO: Explain that classes cannot override each other -->
+
+<p>A member $M$ of class $C$ that <a href="05-classes-and-objects.html#class-members">matches</a>
+a non-private member $M&#39;$ of a
+base class of $C$ is said to <em>override</em> that member.  In this case
+the binding of the overriding member $M$ must <a href="03-types.html#conformance">subsume</a>
+the binding of the overridden member $M&#39;$.
+Furthermore, the following restrictions on modifiers apply to $M$ and
+$M&#39;$:</p>
+
+<ul>
+<li>$M&#39;$ must not be labeled <code>final</code>.</li>
+<li>$M$ must not be <a href="05-classes-and-objects.html#modifiers"><code>private</code></a>.</li>
+<li>If $M$ is labeled <code>private[$C$]</code> for some enclosing class or package $C$,
+then $M&#39;$ must be labeled <code>private[$C&#39;$]</code> for some class or package $C&#39;$ where
+$C&#39;$ equals $C$ or $C&#39;$ is contained in $C$.</li>
+</ul>
+
+<!-- TODO: check whether this is accurate -->
+
+<ul>
+<li>If $M$ is labeled <code>protected</code>, then $M&#39;$ must also be
+labeled <code>protected</code>.</li>
+<li>If $M&#39;$ is not an abstract member, then $M$ must be labeled <code>override</code>.
+Furthermore, one of two possibilities must hold:
+
+<ul>
+<li>either $M$ is defined in a subclass of the class where is $M&#39;$ is defined,</li>
+<li>or both $M$ and $M&#39;$ override a third member $M&#39;&#39;$ which is defined
+in a base class of both the classes containing $M$ and $M&#39;$</li>
+</ul></li>
+<li>If $M&#39;$ is <a href="05-classes-and-objects.html#modifiers">incomplete</a> in $C$ then $M$ must be
+labeled <code>abstract override</code>.</li>
+<li><p>If $M$ and $M&#39;$ are both concrete value definitions, then either none
+of them is marked <code>lazy</code> or both must be marked <code>lazy</code>.</p></li>
+<li><p>A stable member can only be overridden by a stable member.
+For example, this is not allowed:</p></li>
+</ul>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">class X { val stable = 1}
+class Y extends X { override var stable = 1 } // error
+</code></pre></div>
+<p>Another restriction applies to abstract type members: An abstract type
+member with a <a href="03-types.html#volatile-types">volatile type</a> as its upper
+bound may not override an abstract type member which does not have a
+volatile upper bound.</p>
+
+<p>A special rule concerns parameterless methods. If a parameterless
+method defined as <code>def $f$: $T$ = ...</code> or <code>def $f$ = ...</code> overrides a method of
+type $()T&#39;$ which has an empty parameter list, then $f$ is also
+assumed to have an empty parameter list.</p>
+
+<p>An overriding method inherits all default arguments from the definition
+in the superclass. By specifying default arguments in the overriding method
+it is possible to add new defaults (if the corresponding parameter in the
+superclass does not have a default) or to override the defaults of the
+superclass (otherwise).</p>
+
+<h6 id="example">Example</h6>
+
+<p>Consider the definitions:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">trait Root { type T &lt;: Root }
+trait A extends Root { type T &lt;: A }
+trait B extends Root { type T &lt;: B }
+trait C extends A with B
+</code></pre></div>
+<p>Then the class definition <code>C</code> is not well-formed because the
+binding of <code>T</code> in <code>C</code> is
+<code>type T &lt;: B</code>,
+which fails to subsume the binding <code>type T &lt;: A</code> of <code>T</code>
+in type <code>A</code>. The problem can be solved by adding an overriding
+definition of type <code>T</code> in class <code>C</code>:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">class C extends A with B { type T &lt;: C }
+</code></pre></div>
+<h3 id="inheritance-closure">Inheritance Closure</h3>
+
+<p>Let $C$ be a class type. The <em>inheritance closure</em> of $C$ is the
+smallest set $\mathscr{S}$ of types such that</p>
+
+<ul>
+<li>$C$ is in $\mathscr{S}$.</li>
+<li>If $T$ is in $\mathscr{S}$, then every type $T&#39;$ which forms syntactically
+a part of $T$ is also in $\mathscr{S}$.</li>
+<li>If $T$ is a class type in $\mathscr{S}$, then all <a href="05-classes-and-objects.html#templates">parents</a>
+of $T$ are also in $\mathscr{S}$.</li>
+</ul>
+
+<p>It is a static error if the inheritance closure of a class type
+consists of an infinite number of types. (This restriction is
+necessary to make subtyping decidable<sup id="fnref1"><a href="05-classes-and-objects.html#fn1" rel="footnote">1</a></sup>).</p>
+
+<h3 id="early-definitions">Early Definitions</h3>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="EarlyDefs"></a>EarlyDefs         ::= ‘{’ [<t>EarlyDef</t> {<t>semi</t> <t>EarlyDef</t>}] ‘}’ ‘with’
+<a name="EarlyDef"></a>EarlyDef          ::=  {<t>Annotation</t>} {<t>Modifier</t>} <t>PatVarDef</t>
+</code></pre></div>
+<p>A template may start with an <em>early field definition</em> clause,
+which serves to define certain field values before the supertype
+constructor is called. In a template</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">{ val $p_1$: $T_1$ = $e_1$
+  ...
+  val $p_n$: $T_n$ = $e_n$
+} with $sc$ with $mt_1$ with $mt_n$ { $\mathit{stats}$ }
+</code></pre></div>
+<p>The initial pattern definitions of $p_1 , \ldots , p_n$ are called
+<em>early definitions</em>. They define fields
+which form part of the template. Every early definition must define
+at least one variable.</p>
+
+<p>An early definition is type-checked and evaluated in the scope which
+is in effect just before the template being defined, augmented by any
+type parameters of the enclosing class and by any early definitions
+preceding the one being defined. In particular, any reference to
+<code>this</code> in the right-hand side of an early definition refers
+to the identity of <code>this</code> just outside the template. Consequently, it
+is impossible that an early definition refers to the object being
+constructed by the template, or refers to one of its fields and
+methods, except for any other preceding early definition in the same
+section. Furthermore, references to preceding early definitions
+always refer to the value that&#39;s defined there, and do not take into account
+overriding definitions. In other words, a block of early definitions
+is evaluated exactly as if it was a local bock containing a number of value
+definitions.</p>
+
+<p>Early definitions are evaluated in the order they are being defined
+before the superclass constructor of the template is called.</p>
+
+<h6 id="example">Example</h6>
+
+<p>Early definitions are particularly useful for
+traits, which do not have normal constructor parameters. Example:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">trait Greeting {
+  val name: String
+  val msg = &quot;How are you, &quot;+name
+}
+class C extends {
+  val name = &quot;Bob&quot;
+} with Greeting {
+  println(msg)
+}
+</code></pre></div>
+<p>In the code above, the field <code>name</code> is initialized before the
+constructor of <code>Greeting</code> is called. Therefore, field <code>msg</code> in
+class <code>Greeting</code> is properly initialized to <code>&quot;How are you, Bob&quot;</code>.</p>
+
+<p>If <code>name</code> had been initialized instead in <code>C</code>&#39;s normal class
+body, it would be initialized after the constructor of
+<code>Greeting</code>. In that case, <code>msg</code> would be initialized to
+<code>&quot;How are you, &lt;null&gt;&quot;</code>.</p>
+
+<h2 id="modifiers">Modifiers</h2>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="Modifier"></a>Modifier          ::=  <t>LocalModifier</t>
+                    |  <t>AccessModifier</t>
+                    |  ‘override’
+<a name="LocalModifier"></a>LocalModifier     ::=  ‘abstract’
+                    |  ‘final’
+                    |  ‘sealed’
+                    |  ‘implicit’
+                    |  ‘lazy’
+<a name="AccessModifier"></a>AccessModifier    ::=  (‘private’ | ‘protected’) [<t>AccessQualifier</t>]
+<a name="AccessQualifier"></a>AccessQualifier   ::=  ‘[’ (<t>id</t> | ‘this’) ‘]’
+</code></pre></div>
+<p>Member definitions may be preceded by modifiers which affect the
+accessibility and usage of the identifiers bound by them.  If several
+modifiers are given, their order does not matter, but the same
+modifier may not occur more than once.  Modifiers preceding a repeated
+definition apply to all constituent definitions.  The rules governing
+the validity and meaning of a modifier are as follows.</p>
+
+<h3 id="private"><code>private</code></h3>
+
+<p>The <code>private</code> modifier can be used with any definition or
+declaration in a template.  Such members can be accessed only from
+within the directly enclosing template and its companion module or
+<a href="05-classes-and-objects.html#object-definitions">companion class</a>.</p>
+
+<p>A <code>private</code> modifier can be <em>qualified</em> with an identifier $C$ (e.g.
+<code>private[$C$]</code>) that must denote a class or package enclosing the definition.
+Members labeled with such a modifier are accessible respectively only from code
+inside the package $C$ or only from code inside the class $C$ and its
+<a href="05-classes-and-objects.html#object-definitions">companion module</a>.</p>
+
+<p>A different form of qualification is <code>private[this]</code>. A member
+$M$ marked with this modifier is called <em>object-protected</em>; it can be accessed only from within
+the object in which it is defined. That is, a selection $p.M$ is only
+legal if the prefix is <code>this</code> or <code>$O$.this</code>, for some
+class $O$ enclosing the reference. In addition, the restrictions for
+unqualified <code>private</code> apply.</p>
+
+<p>Members marked private without a qualifier are called <em>class-private</em>,
+whereas members labeled with <code>private[this]</code>
+are called <em>object-private</em>.  A member <em>is private</em> if it is
+either class-private or object-private, but not if it is marked
+<code>private[$C$]</code> where $C$ is an identifier; in the latter
+case the member is called <em>qualified private</em>.</p>
+
+<p>Class-private or object-private members may not be abstract, and may
+not have <code>protected</code> or <code>override</code> modifiers. They are not inherited
+by subclasses and they may not override definitions in parent classes.</p>
+
+<h3 id="protected"><code>protected</code></h3>
+
+<p>The <code>protected</code> modifier applies to class member definitions.
+Protected members of a class can be accessed from within</p>
+
+<ul>
+<li>the template of the defining class,</li>
+<li>all templates that have the defining class as a base class,</li>
+<li>the companion module of any of those classes.</li>
+</ul>
+
+<p>A <code>protected</code> modifier can be qualified with an identifier $C$ (e.g.
+<code>protected[$C$]</code>) that must denote a class or package enclosing the definition.
+Members labeled with such a modifier are also accessible respectively from all
+code inside the package $C$ or from all code inside the class $C$ and its
+<a href="05-classes-and-objects.html#object-definitions">companion module</a>.</p>
+
+<p>A protected identifier $x$ may be used as a member name in a selection
+<code>$r$.$x$</code> only if one of the following applies:</p>
+
+<ul>
+<li>The access is within the template defining the member, or, if
+a qualification $C$ is given, inside the package $C$,
+or the class $C$, or its companion module, or</li>
+<li>$r$ is one of the reserved words <code>this</code> and
+<code>super</code>, or</li>
+<li>$r$&#39;s type conforms to a type-instance of the
+class which contains the access.</li>
+</ul>
+
+<p>A different form of qualification is <code>protected[this]</code>. A member
+$M$ marked with this modifier is called <em>object-protected</em>; it can be accessed only from within
+the object in which it is defined. That is, a selection $p.M$ is only
+legal if the prefix is <code>this</code> or <code>$O$.this</code>, for some
+class $O$ enclosing the reference. In addition, the restrictions for
+unqualified <code>protected</code> apply.</p>
+
+<h3 id="override"><code>override</code></h3>
+
+<p>The <code>override</code> modifier applies to class member definitions or declarations.
+It is mandatory for member definitions or declarations that override some
+other concrete member definition in a parent class. If an <code>override</code>
+modifier is given, there must be at least one overridden member
+definition or declaration (either concrete or abstract).</p>
+
+<h3 id="abstract-override"><code>abstract override</code></h3>
+
+<p>The <code>override</code> modifier has an additional significance when
+combined with the <code>abstract</code> modifier.  That modifier combination
+is only allowed for value members of traits.</p>
+
+<p>We call a member $M$ of a template <em>incomplete</em> if it is either
+abstract (i.e. defined by a declaration), or it is labeled
+<code>abstract</code> and <code>override</code> and
+every member overridden by $M$ is again incomplete.</p>
+
+<p>Note that the <code>abstract override</code> modifier combination does not
+influence the concept whether a member is concrete or abstract. A
+member is <em>abstract</em> if only a declaration is given for it;
+it is <em>concrete</em> if a full definition is given.</p>
+
+<h3 id="abstract"><code>abstract</code></h3>
+
+<p>The <code>abstract</code> modifier is used in class definitions. It is
+redundant for traits, and mandatory for all other classes which have
+incomplete members.  Abstract classes cannot be
+<a href="06-expressions.html#instance-creation-expressions">instantiated</a> with a constructor invocation
+unless followed by mixins and/or a refinement which override all
+incomplete members of the class. Only abstract classes and traits can have
+abstract term members.</p>
+
+<p>The <code>abstract</code> modifier can also be used in conjunction with
+<code>override</code> for class member definitions. In that case the
+previous discussion applies.</p>
+
+<h3 id="final"><code>final</code></h3>
+
+<p>The <code>final</code> modifier applies to class member definitions and to
+class definitions. A <code>final</code> class member definition may not be
+overridden in subclasses. A <code>final</code> class may not be inherited by
+a template. <code>final</code> is redundant for object definitions.  Members
+of final classes or objects are implicitly also final, so the
+<code>final</code> modifier is generally redundant for them, too. Note, however, that
+<a href="04-basic-declarations-and-definitions.html#value-declarations-and-definitions">constant value definitions</a> do require
+an explicit <code>final</code> modifier, even if they are defined in a final class or
+object. <code>final</code> may not be applied to incomplete members, and it may not be
+combined in one modifier list with <code>sealed</code>.</p>
+
+<h3 id="sealed"><code>sealed</code></h3>
+
+<p>The <code>sealed</code> modifier applies to class definitions. A
+<code>sealed</code> class may not be directly inherited, except if the inheriting
+template is defined in the same source file as the inherited class.
+However, subclasses of a sealed class can be inherited anywhere.</p>
+
+<h3 id="lazy"><code>lazy</code></h3>
+
+<p>The <code>lazy</code> modifier applies to value definitions. A <code>lazy</code>
+value is initialized the first time it is accessed (which might never
+happen at all). Attempting to access a lazy value during its
+initialization might lead to looping behavior. If an exception is
+thrown during initialization, the value is considered uninitialized,
+and a later access will retry to evaluate its right hand side.</p>
+
+<h6 id="example">Example</h6>
+
+<p>The following code illustrates the use of qualified private:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">package outerpkg.innerpkg
+class Outer {
+  class Inner {
+    private[Outer] def f()
+    private[innerpkg] def g()
+    private[outerpkg] def h()
+  }
+}
+</code></pre></div>
+<p>Here, accesses to the method <code>f</code> can appear anywhere within
+<code>Outer</code>, but not outside it. Accesses to method
+<code>g</code> can appear anywhere within the package
+<code>outerpkg.innerpkg</code>, as would be the case for
+package-private methods in Java. Finally, accesses to method
+<code>h</code> can appear anywhere within package <code>outerpkg</code>,
+including packages contained in it.</p>
+
+<h6 id="example">Example</h6>
+
+<p>A useful idiom to prevent clients of a class from
+constructing new instances of that class is to declare the class
+<code>abstract</code> and <code>sealed</code>:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">object m {
+  abstract sealed class C (x: Int) {
+    def nextC = new C(x + 1) {}
+  }
+  val empty = new C(0) {}
+}
+</code></pre></div>
+<p>For instance, in the code above clients can create instances of class
+<code>m.C</code> only by calling the <code>nextC</code> method of an existing <code>m.C</code>
+object; it is not possible for clients to create objects of class
+<code>m.C</code> directly. Indeed the following two lines are both in error:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">new m.C(0)    // **** error: C is abstract, so it cannot be instantiated.
+new m.C(0) {} // **** error: illegal inheritance from sealed class.
+</code></pre></div>
+<p>A similar access restriction can be achieved by marking the primary
+constructor <code>private</code> (<a href="05-classes-and-objects.html#example-private-constructor">example</a>).</p>
+
+<h2 id="class-definitions">Class Definitions</h2>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="TmplDef"></a>TmplDef           ::=  ‘class’ <t>ClassDef</t>
+<a name="ClassDef"></a>ClassDef          ::=  <t>id</t> [<t>TypeParamClause</t>] {<t>Annotation</t>}
+                       [<t>AccessModifier</t>] <t>ClassParamClauses</t> <t>ClassTemplateOpt</t>
+<a name="ClassParamClauses"></a>ClassParamClauses ::=  {<t>ClassParamClause</t>}
+                       [[<t>nl</t>] ‘(’ <t>implicit</t> <t>ClassParams</t> ‘)’]
+<a name="ClassParamClause"></a>ClassParamClause  ::=  [<t>nl</t>] ‘(’ [<t>ClassParams</t>] ‘)’
+<a name="ClassParams"></a>ClassParams       ::=  <t>ClassParam</t> {‘,’ <t>ClassParam</t>}
+<a name="ClassParam"></a>ClassParam        ::=  {<t>Annotation</t>} {<t>Modifier</t>} [(‘val’ | ‘var’)]
+                       <t>id</t> [‘:’ <t>ParamType</t>] [‘=’ <t>Expr</t>]
+<a name="ClassTemplateOpt"></a>ClassTemplateOpt  ::=  ‘extends’ <t>ClassTemplate</t> | [[‘extends’] <t>TemplateBody</t>]
+</code></pre></div>
+<p>The most general form of class definition is</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">class $c$[$\mathit{tps}\,$] $as$ $m$($\mathit{ps}_1$)$\ldots$($\mathit{ps}_n$) extends $t$    $\quad(n \geq 0)$.
+</code></pre></div>
+<p>Here,</p>
+
+<ul>
+<li>$c$ is the name of the class to be defined.</li>
+<li>$\mathit{tps}$ is a non-empty list of type parameters of the class
+being defined.  The scope of a type parameter is the whole class
+definition including the type parameter section itself.  It is
+illegal to define two type parameters with the same name.  The type
+parameter section <code>[$\mathit{tps}\,$]</code> may be omitted. A class with a type
+parameter section is called <em>polymorphic</em>, otherwise it is called
+<em>monomorphic</em>.</li>
+<li>$as$ is a possibly empty sequence of
+<a href="11-annotations.html#user-defined-annotations">annotations</a>.
+If any annotations are given, they apply to the primary constructor of the
+class.</li>
+<li>$m$ is an <a href="05-classes-and-objects.html#modifiers">access modifier</a> such as
+<code>private</code> or <code>protected</code>, possibly with a qualification.
+If such an access modifier is given it applies to the primary constructor of the class.</li>
+<li><p>$(\mathit{ps}_1)\ldots(\mathit{ps}_n)$ are formal value parameter clauses for
+the <em>primary constructor</em> of the class. The scope of a formal value parameter includes
+all subsequent parameter sections and the template $t$. However, a formal
+value parameter may not form part of the types of any of the parent classes or members of the class template $t$.
+It is illegal to define two formal value parameters with the same name.</p>
+
+<p>If no formal parameter sections are given, an empty parameter section <code>()</code> is assumed.</p>
+
+<p>If a formal parameter declaration $x: T$ is preceded by a <code>val</code>
+or <code>var</code> keyword, an accessor (getter) <a href="04-basic-declarations-and-definitions.html#variable-declarations-and-definitions">definition</a>
+for this parameter is implicitly added to the class.</p>
+
+<p>The getter introduces a value member $x$ of class $c$ that is defined as an alias of the parameter.
+If the introducing keyword is <code>var</code>, a setter accessor <a href="04-basic-declarations-and-definitions.html#variable-declarations-and-definitions"><code>$x$_=</code></a> is also implicitly added to the class.
+In invocation of that setter  <code>$x$_=($e$)</code> changes the value of the parameter to the result of evaluating $e$.</p>
+
+<p>The formal parameter declaration may contain modifiers, which then carry over to the accessor definition(s).
+When access modifiers are given for a parameter, but no <code>val</code> or <code>var</code> keyword, <code>val</code> is assumed.
+A formal parameter prefixed by <code>val</code> or <code>var</code> may not at the same time be a <a href="04-basic-declarations-and-definitions.html#by-name-parameters">call-by-name parameter</a>.</p></li>
+<li><p>$t$ is a <a href="05-classes-and-objects.html#templates">template</a> of the form</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">$sc$ with $mt_1$ with $\ldots$ with $mt_m$ { $\mathit{stats}$ } // $m \geq 0$
+</code></pre></div>
+<p>which defines the base classes, behavior and initial state of objects of
+the class. The extends clause
+<code>extends $sc$ with $mt_1$ with $\ldots$ with $mt_m$</code>
+can be omitted, in which case
+<code>extends scala.AnyRef</code> is assumed.  The class body
+<code>{ $\mathit{stats}$ }</code> may also be omitted, in which case the empty body
+<code>{}</code> is assumed.</p></li>
+</ul>
+
+<p>This class definition defines a type <code>$c$[$\mathit{tps}\,$]</code> and a constructor
+which when applied to parameters conforming to types $\mathit{ps}$
+initializes instances of type <code>$c$[$\mathit{tps}\,$]</code> by evaluating the template
+$t$.</p>
+
+<h6 id="example-–-val-and-var-parameters">Example – <code>val</code> and <code>var</code> parameters</h6>
+
+<p>The following example illustrates <code>val</code> and <code>var</code> parameters of a class <code>C</code>:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">class C(x: Int, val y: String, var z: List[String])
+val c = new C(1, &quot;abc&quot;, List())
+c.z = c.y :: c.z
+</code></pre></div>
+<h6 id="example-–-private-constructor">Example – Private Constructor</h6>
+
+<p>The following class can be created only from its companion module.</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">object Sensitive {
+  def makeSensitive(credentials: Certificate): Sensitive =
+    if (credentials == Admin) new Sensitive()
+    else throw new SecurityViolationException
+}
+class Sensitive private () {
+  ...
+}
+</code></pre></div>
+<h3 id="constructor-definitions">Constructor Definitions</h3>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="FunDef"></a>FunDef         ::= ‘this’ <t>ParamClause</t> <t>ParamClauses</t>
+                   (‘=’ <t>ConstrExpr</t> | [<t>nl</t>] <t>ConstrBlock</t>)
+<a name="ConstrExpr"></a>ConstrExpr     ::= <t>SelfInvocation</t>
+                |  <t>ConstrBlock</t>
+<a name="ConstrBlock"></a>ConstrBlock    ::= ‘{’ <t>SelfInvocation</t> {<t>semi</t> <t>BlockStat</t>} ‘}’
+<a name="SelfInvocation"></a>SelfInvocation ::= ‘this’ <t>ArgumentExprs</t> {<t>ArgumentExprs</t>}
+</code></pre></div>
+<p>A class may have additional constructors besides the primary
+constructor.  These are defined by constructor definitions of the form
+<code>def this($\mathit{ps}_1$)$\ldots$($\mathit{ps}_n$) = $e$</code>.  Such a
+definition introduces an additional constructor for the enclosing
+class, with parameters as given in the formal parameter lists $\mathit{ps}_1
+, \ldots , \mathit{ps}_n$, and whose evaluation is defined by the constructor
+expression $e$.  The scope of each formal parameter is the subsequent
+parameter sections and the constructor
+expression $e$.  A constructor expression is either a self constructor
+invocation <code>this($\mathit{args}_1$)$\ldots$($\mathit{args}_n$)</code> or a block
+which begins with a self constructor invocation. The self constructor
+invocation must construct a generic instance of the class. I.e. if the
+class in question has name $C$ and type parameters
+<code>[$\mathit{tps}\,$]</code>, then a self constructor invocation must
+generate an instance of <code>$C$[$\mathit{tps}\,$]</code>; it is not permitted
+to instantiate formal type parameters.</p>
+
+<p>The signature and the self constructor invocation of a constructor
+definition are type-checked and evaluated in the scope which is in
+effect at the point of the enclosing class definition, augmented by
+any type parameters of the enclosing class and by any
+<a href="05-classes-and-objects.html#early-definitions">early definitions</a> of the enclosing template.
+The rest of the
+constructor expression is type-checked and evaluated as a function
+body in the current class.</p>
+
+<p>If there are auxiliary constructors of a class $C$, they form together
+with $C$&#39;s primary <a href="05-classes-and-objects.html#class-definitions">constructor</a>
+an overloaded constructor
+definition. The usual rules for
+<a href="06-expressions.html#overloading-resolution">overloading resolution</a>
+apply for constructor invocations of $C$,
+including for the self constructor invocations in the constructor
+expressions themselves. However, unlike other methods, constructors
+are never inherited.  To prevent infinite cycles of constructor
+invocations, there is the restriction that every self constructor
+invocation must refer to a constructor definition which precedes it
+(i.e. it must refer to either a preceding auxiliary constructor or the
+primary constructor of the class).</p>
+
+<h6 id="example">Example</h6>
+
+<p>Consider the class definition</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">class LinkedList[A]() {
+  var head = _
+  var tail = null
+  def isEmpty = tail != null
+  def this(head: A) = { this(); this.head = head }
+  def this(head: A, tail: List[A]) = { this(head); this.tail = tail }
+}
+</code></pre></div>
+<p>This defines a class <code>LinkedList</code> with three constructors.  The
+second constructor constructs an singleton list, while the
+third one constructs a list with a given head and tail.</p>
+
+<h3 id="case-classes">Case Classes</h3>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="TmplDef"></a>TmplDef  ::=  ‘case’ ‘class’ <t>ClassDef</t>
+</code></pre></div>
+<p>If a class definition is prefixed with <code>case</code>, the class is said
+to be a <em>case class</em>.</p>
+
+<p>The formal parameters in the first parameter section of a case class
+are called <em>elements</em>; they are treated
+specially. First, the value of such a parameter can be extracted as a
+field of a constructor pattern. Second, a <code>val</code> prefix is
+implicitly added to such a parameter, unless the parameter carries
+already a <code>val</code> or <code>var</code> modifier. Hence, an accessor
+definition for the parameter is <a href="05-classes-and-objects.html#class-definitions">generated</a>.</p>
+
+<p>A case class definition of <code>$c$[$\mathit{tps}\,$]($\mathit{ps}_1\,$)$\ldots$($\mathit{ps}_n$)</code> with type
+parameters $\mathit{tps}$ and value parameters $\mathit{ps}$ implicitly
+generates an <a href="08-pattern-matching.html#extractor-patterns">extractor object</a> which is
+defined as follows:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">object $c$ {
+  def apply[$\mathit{tps}\,$]($\mathit{ps}_1\,$)$\ldots$($\mathit{ps}_n$): $c$[$\mathit{tps}\,$] = new $c$[$\mathit{Ts}\,$]($\mathit{xs}_1\,$)$\ldots$($\mathit{xs}_n$)
+  def unapply[$\mathit{tps}\,$]($x$: $c$[$\mathit{tps}\,$]) =
+    if (x eq null) scala.None
+    else scala.Some($x.\mathit{xs}_{11}, \ldots , x.\mathit{xs}_{1k}$)
+}
+</code></pre></div>
+<p>Here, $\mathit{Ts}$ stands for the vector of types defined in the type
+parameter section $\mathit{tps}$,
+each $\mathit{xs}_i$ denotes the parameter names of the parameter
+section $\mathit{ps}_i$, and
+$\mathit{xs}_{11}, \ldots , \mathit{xs}_{1k}$ denote the names of all parameters
+in the first parameter section $\mathit{xs}_1$.
+If a type parameter section is missing in the
+class, it is also missing in the <code>apply</code> and
+<code>unapply</code> methods.
+The definition of <code>apply</code> is omitted if class $c$ is
+<code>abstract</code>.</p>
+
+<p>If the case class definition contains an empty value parameter list, the
+<code>unapply</code> method returns a <code>Boolean</code> instead of an <code>Option</code> type and
+is defined as follows:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">def unapply[$\mathit{tps}\,$]($x$: $c$[$\mathit{tps}\,$]) = x ne null
+</code></pre></div>
+<p>The name of the <code>unapply</code> method is changed to <code>unapplySeq</code> if the first
+parameter section $\mathit{ps}_1$ of $c$ ends in a
+<a href="04-basic-declarations-and-definitions.html#repeated-parameters">repeated parameter</a>.
+If a companion object $c$ exists already, no new object is created,
+but the <code>apply</code> and <code>unapply</code> methods are added to the existing
+object instead.</p>
+
+<p>A method named <code>copy</code> is implicitly added to every case class unless the
+class already has a member (directly defined or inherited) with that name, or the
+class has a repeated parameter. The method is defined as follows:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">def copy[$\mathit{tps}\,$]($\mathit{ps}&#39;_1\,$)$\ldots$($\mathit{ps}&#39;_n$): $c$[$\mathit{tps}\,$] = new $c$[$\mathit{Ts}\,$]($\mathit{xs}_1\,$)$\ldots$($\mathit{xs}_n$)
+</code></pre></div>
+<p>Again, <code>$\mathit{Ts}$</code> stands for the vector of types defined in the type parameter section <code>$\mathit{tps}$</code>
+and each <code>$xs_i$</code> denotes the parameter names of the parameter section <code>$ps&#39;_i$</code>. The value
+parameters <code>$ps&#39;_{1,j}$</code> of first parameter list have the form <code>$x_{1,j}$:$T_{1,j}$=this.$x_{1,j}$</code>,
+the other parameters <code>$ps&#39;_{i,j}$</code> of the <code>copy</code> method are defined as <code>$x_{i,j}$:$T_{i,j}$</code>.
+In all cases <code>$x_{i,j}$</code> and <code>$T_{i,j}$</code> refer to the name and type of the corresponding class parameter
+<code>$\mathit{ps}_{i,j}$</code>.</p>
+
+<p>Every case class implicitly overrides some method definitions of class
+<a href="12-the-scala-standard-library.html#root-classes"><code>scala.AnyRef</code></a> unless a definition of the same
+method is already given in the case class itself or a concrete
+definition of the same method is given in some base class of the case
+class different from <code>AnyRef</code>. In particular:</p>
+
+<ul>
+<li>Method <code>equals: (Any)Boolean</code> is structural equality, where two
+instances are equal if they both belong to the case class in question and they
+have equal (with respect to <code>equals</code>) constructor arguments (restricted to the class&#39;s <em>elements</em>, i.e., the first parameter section).</li>
+<li>Method <code>hashCode: Int</code> computes a hash-code. If the hashCode methods
+of the data structure members map equal (with respect to equals)
+values to equal hash-codes, then the case class hashCode method does
+too.</li>
+<li>Method <code>toString: String</code> returns a string representation which
+contains the name of the class and its elements.</li>
+</ul>
+
+<h6 id="example">Example</h6>
+
+<p>Here is the definition of abstract syntax for lambda calculus:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">class Expr
+case class Var   (x: String)          extends Expr
+case class Apply (f: Expr, e: Expr)   extends Expr
+case class Lambda(x: String, e: Expr) extends Expr
+</code></pre></div>
+<p>This defines a class <code>Expr</code> with case classes
+<code>Var</code>, <code>Apply</code> and <code>Lambda</code>. A call-by-value evaluator
+for lambda expressions could then be written as follows.</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">type Env = String =&gt; Value
+case class Value(e: Expr, env: Env)
+
+def eval(e: Expr, env: Env): Value = e match {
+  case Var (x) =&gt;
+    env(x)
+  case Apply(f, g) =&gt;
+    val Value(Lambda (x, e1), env1) = eval(f, env)
+    val v = eval(g, env)
+    eval (e1, (y =&gt; if (y == x) v else env1(y)))
+  case Lambda(_, _) =&gt;
+    Value(e, env)
+}
+</code></pre></div>
+<p>It is possible to define further case classes that extend type
+<code>Expr</code> in other parts of the program, for instance</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">case class Number(x: Int) extends Expr
+</code></pre></div>
+<p>This form of extensibility can be excluded by declaring the base class
+<code>Expr</code> <code>sealed</code>; in this case, all classes that
+directly extend <code>Expr</code> must be in the same source file as
+<code>Expr</code>.</p>
+
+<h2 id="traits">Traits</h2>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="TmplDef"></a>TmplDef          ::=  ‘trait’ <t>TraitDef</t>
+<a name="TraitDef"></a>TraitDef         ::=  <t>id</t> [<t>TypeParamClause</t>] <t>TraitTemplateOpt</t>
+<a name="TraitTemplateOpt"></a>TraitTemplateOpt ::=  ‘extends’ <t>TraitTemplate</t> | [[‘extends’] <t>TemplateBody</t>]
+</code></pre></div>
+<p>A <em>trait</em> is a class that is meant to be added to some other class
+as a mixin. Unlike normal classes, traits cannot have
+constructor parameters. Furthermore, no constructor arguments are
+passed to the superclass of the trait. This is not necessary as traits are
+initialized after the superclass is initialized.</p>
+
+<p>Assume a trait $D$ defines some aspect of an instance $x$ of type $C$ (i.e. $D$ is a base class of $C$).
+Then the <em>actual supertype</em> of $D$ in $x$ is the compound type consisting of all the
+base classes in $\mathcal{L}(C)$ that succeed $D$.  The actual supertype gives
+the context for resolving a <a href="06-expressions.html#this-and-super"><code>super</code> reference</a> in a trait.
+Note that the actual supertype depends on the type to which the trait is added in a mixin composition;
+it is not statically known at the time the trait is defined.</p>
+
+<p>If $D$ is not a trait, then its actual supertype is simply its
+least proper supertype (which is statically known).</p>
+
+<h6 id="example">Example</h6>
+
+<p>The following trait defines the property
+of being comparable to objects of some type. It contains an abstract
+method <code>&lt;</code> and default implementations of the other
+comparison operators <code>&lt;=</code>, <code>&gt;</code>, and
+<code>&gt;=</code>.</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">trait Comparable[T &lt;: Comparable[T]] { self: T =&gt;
+  def &lt; (that: T): Boolean
+  def &lt;=(that: T): Boolean = this &lt; that || this == that
+  def &gt; (that: T): Boolean = that &lt; this
+  def &gt;=(that: T): Boolean = that &lt;= this
+}
+</code></pre></div>
+<h6 id="example">Example</h6>
+
+<p>Consider an abstract class <code>Table</code> that implements maps
+from a type of keys <code>A</code> to a type of values <code>B</code>. The class
+has a method <code>set</code> to enter a new key / value pair into the table,
+and a method <code>get</code> that returns an optional value matching a
+given key. Finally, there is a method <code>apply</code> which is like
+<code>get</code>, except that it returns a given default value if the table
+is undefined for the given key. This class is implemented as follows.</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">abstract class Table[A, B](defaultValue: B) {
+  def get(key: A): Option[B]
+  def set(key: A, value: B)
+  def apply(key: A) = get(key) match {
+    case Some(value) =&gt; value
+    case None =&gt; defaultValue
+  }
+}
+</code></pre></div>
+<p>Here is a concrete implementation of the <code>Table</code> class.</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">class ListTable[A, B](defaultValue: B) extends Table[A, B](defaultValue) {
+  private var elems: List[(A, B)]
+  def get(key: A) = elems.find(._1.==(key)).map(._2)
+  def set(key: A, value: B) = { elems = (key, value) :: elems }
+}
+</code></pre></div>
+<p>Here is a trait that prevents concurrent access to the
+<code>get</code> and <code>set</code> operations of its parent class:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">trait SynchronizedTable[A, B] extends Table[A, B] {
+  abstract override def get(key: A): B =
+    synchronized { super.get(key) }
+  abstract override def set((key: A, value: B) =
+    synchronized { super.set(key, value) }
+}
+</code></pre></div>
+<p>Note that <code>SynchronizedTable</code> does not pass an argument to
+its superclass, <code>Table</code>, even  though <code>Table</code> is defined with a
+formal parameter. Note also that the <code>super</code> calls
+in <code>SynchronizedTable</code>&#39;s <code>get</code> and <code>set</code> methods
+statically refer to abstract methods in class <code>Table</code>. This is
+legal, as long as the calling method is labeled
+<a href="05-classes-and-objects.html#modifiers"><code>abstract override</code></a>.</p>
+
+<p>Finally, the following mixin composition creates a synchronized list
+table with strings as keys and integers as values and with a default
+value <code>0</code>:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">object MyTable extends ListTable[String, Int](0) with SynchronizedTable
+</code></pre></div>
+<p>The object <code>MyTable</code> inherits its <code>get</code> and <code>set</code>
+method from <code>SynchronizedTable</code>.  The <code>super</code> calls in these
+methods are re-bound to refer to the corresponding implementations in
+<code>ListTable</code>, which is the actual supertype of <code>SynchronizedTable</code>
+in <code>MyTable</code>.</p>
+
+<h2 id="object-definitions">Object Definitions</h2>
+<div class="highlight"><pre><code class="language-ebnf" data-lang="ebnf"><a name="ObjectDef"></a>ObjectDef       ::=  <t>id</t> <t>ClassTemplate</t>
+</code></pre></div>
+<p>An <em>object definition</em> defines a single object of a new class. Its
+most general form is
+<code>object $m$ extends $t$</code>. Here,
+$m$ is the name of the object to be defined, and
+$t$ is a <a href="05-classes-and-objects.html#templates">template</a> of the form</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">$sc$ with $mt_1$ with $\ldots$ with $mt_n$ { $\mathit{stats}$ }
+</code></pre></div>
+<p>which defines the base classes, behavior and initial state of $m$.
+The extends clause <code>extends $sc$ with $mt_1$ with $\ldots$ with $mt_n$</code>
+can be omitted, in which case
+<code>extends scala.AnyRef</code> is assumed.  The class body
+<code>{ $\mathit{stats}$ }</code> may also be omitted, in which case the empty body
+<code>{}</code> is assumed.</p>
+
+<p>The object definition defines a single object (or: <em>module</em>)
+conforming to the template $t$.  It is roughly equivalent to the
+following definition of a lazy value:</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">lazy val $m$ = new $sc$ with $mt_1$ with $\ldots$ with $mt_n$ { this: $m.type$ =&gt; $\mathit{stats}$ }
+</code></pre></div>
+<p>Note that the value defined by an object definition is instantiated
+lazily.  The <code>new $m$\$cls</code> constructor is evaluated
+not at the point of the object definition, but is instead evaluated
+the first time $m$ is dereferenced during execution of the program
+(which might be never at all). An attempt to dereference $m$ again
+during evaluation of the constructor will lead to an infinite loop
+or run-time error.
+Other threads trying to dereference $m$ while the
+constructor is being evaluated block until evaluation is complete.</p>
+
+<p>The expansion given above is not accurate for top-level objects. It
+cannot be because variable and method definition cannot appear on the
+top-level outside of a <a href="09-top-level-definitions.html#package-objects">package object</a>. Instead,
+top-level objects are translated to static fields.</p>
+
+<h6 id="example">Example</h6>
+
+<p>Classes in Scala do not have static members; however, an equivalent
+effect can be achieved by an accompanying object definition
+E.g.</p>
+<div class="highlight"><pre><code class="language-scala" data-lang="scala">abstract class Point {
+  val x: Double
+  val y: Double
+  def isOrigin = (x == 0.0 &amp;&amp; y == 0.0)
+}
+object Point {
+  val origin = new Point() { val x = 0.0; val y = 0.0 }
+}
+</code></pre></div>
+<p>This defines a class <code>Point</code> and an object <code>Point</code> which
+contains <code>origin</code> as a member.  Note that the double use of the
+name <code>Point</code> is legal, since the class definition defines the
+name <code>Point</code> in the type name space, whereas the object
+definition defines a name in the term namespace.</p>
+
+<p>This technique is applied by the Scala compiler when interpreting a
+Java class with static members. Such a class $C$ is conceptually seen
+as a pair of a Scala class that contains all instance members of $C$
+and a Scala object that contains all static members of $C$.</p>
+
+<p>Generally, a <em>companion module</em> of a class is an object which has
+the same name as the class and is defined in the same scope and
+compilation unit. Conversely, the class is called the <em>companion class</em>
+of the module.</p>
+
+<p>Very much like a concrete class definition, an object definition may
+still contain declarations of abstract type members, but not of
+abstract term members.</p>
+
+<div class="footnotes">
+<hr>
+<ol>
+
+<li id="fn1">
+<p>Kennedy, Pierce. <a href="http://research.microsoft.com/pubs/64041/fool2007.pdf">On Decidability of Nominal Subtyping with Variance.</a> in FOOL 2007&nbsp;<a href="05-classes-and-objects.html#fnref1" rev="footnote">&#8617;</a></p>
+</li>
+
+</ol>
+</div>
+
+  </main>
+
+  <script src="public/scripts/toc.js"></script>
+  <script src="public/scripts/highlight.pack.js"></script>
+  <script src="public/scripts/main.js"></script>
+</body>
+</html>

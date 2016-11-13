@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+
+  <link rel="icon" type="image/png" href="public/favicon.ico">
+  <link rel="shortcut icon" type="image/png" href="public/favicon.ico">
+
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      skipTags: ['script', 'noscript', 'style', 'textarea'],
+      processEscapes: true
+    }
+  });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/2.6-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+  <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.2/styles/default.min.css">
+  <!-- need to use include to see value of page.chapter variable -->
+  <style type="text/css">
+    h1 {
+  /* must reset here */
+  counter-reset: chapter 15;
+}
+h1:before {
+  /* and must reset again here */
+  counter-reset: chapter 15;
+  content: "Chapter " counter(chapter);
+  display: block;
+}
+
+h2 {
+  /* must increment here */
+  counter-increment: section;
+  counter-reset: subsection;
+}
+h2:before {
+  /* and must reset again here */
+  counter-reset: chapter 15;
+
+  content: counter(chapter) "." counter(section) ;
+  display: inline;
+  margin-right: 1em;
+}
+h2:after {
+  /* can only have one counter-reset per tag, so can't do it in h2/h2:before... */
+  counter-reset: example;
+}
+
+h3 {
+  /* must increment here */
+  counter-increment: subsection;
+}
+h3:before {
+  /* and must reset again here */
+  counter-reset: chapter 15;
+
+  content: counter(chapter) "." counter(section) "." counter(subsection);
+  display: inline;
+  margin-right: 1em;
+}
+h3[id*='example'] {
+  /* must increment here */
+  counter-increment: example;
+  display: inline;
+}
+h3[id*='example']:before {
+  /* and must reset again here */
+  counter-reset: chapter 15;
+
+  content: "Example " counter(chapter) "." counter(section) "." counter(example);
+  display: inline;
+  margin-right: 1em;
+}
+
+.no-numbering, .no-numbering:before, .no-numbering:after {
+  content: normal;
+  counter-reset: none;
+  counter-increment: none;
+}
+
+  </style>
+  <link rel="stylesheet" type="text/css" href="public/stylesheets/screen.css">
+  <link rel="stylesheet" type="text/css" media="(max-width: 1400px), (orientation: portrait)" href="public/stylesheets/screen-small.css">
+  <link rel="stylesheet" type="text/css" media="print" href="public/stylesheets/print.css">
+  <link rel="stylesheet" type="text/css" href="public/stylesheets/fonts.css">
+  <title>Changelog</title>
+</head>
+
+<body>
+  <header>
+    <nav id="chapters"><a id="github" href="https://github.com/scala/scala/tree/2.12.x/spec"><img src="public/images/github-logo@2x.png" alt="Edit at GitHub"></a><a href="01-lexical-syntax.html">1 Lexical Syntax</a><a href="02-identifiers-names-and-scopes.html">2 Identifiers, Names & Scopes</a><a href="03-types.html">3 Types</a><a href="04-basic-declarations-and-definitions.html">4 Basic Declarations & Definitions</a><a href="05-classes-and-objects.html">5 Classes & Objects</a><a href="06-expressions.html">6 Expressions</a><a href="07-implicits.html">7 Implicits</a><a href="08-pattern-matching.html">8 Pattern Matching</a><a href="09-top-level-definitions.html">9 Top-Level Definitions</a><a href="10-xml-expressions-and-patterns.html">10 XML</a><a href="11-annotations.html">11 Annotations</a><a href="12-the-scala-standard-library.html">12 Standard Library</a><a href="13-syntax-summary.html">13 Syntax Summary</a><a href="14-references.html">14 References</a><a href="15-changelog.html">15 Changelog</a></nav>
+  </header>
+  <aside class="left"><nav id="toc"></nav></aside>
+
+  <main id="content">
+<h1 id="changelog">Changelog</h1>
+
+<h2 id="changes-in-version-2-8-0">Changes in Version 2.8.0</h2>
+
+<h4 id="trailing-commas">Trailing commas</h4>
+
+<p>Trailing commas in expression, argument, type or pattern sequences are
+no longer supported.</p>
+
+<h2 id="changes-in-version-2-8">Changes in Version 2.8</h2>
+
+<p>Changed visibility rules for nested packages (where done?)</p>
+
+<p>Changed <a href="02-identifiers-names-and-scopes.html">visibility rules</a>
+so that packages are no longer treated specially.</p>
+
+<p>Added section on <a href="03-types.html#weak-conformance">weak conformance</a>.
+Relaxed type rules for conditionals,
+match expressions, try expressions to compute their result type using
+least upper bound wrt weak conformance. Relaxed type rule for local type
+inference so that argument types need only weekly conform to inferred
+formal parameter types. Added section on
+<a href="06-expressions.html#numeric-widening">numeric widening</a> to support
+weak conformance.</p>
+
+<p>Tightened rules to avoid accidental <a href="05-classes-and-objects.html#overriding">overrides</a>.</p>
+
+<p>Removed class literals.</p>
+
+<p>Added section on <a href="07-implicits.html#context-bounds-and-view-bounds">context bounds</a>.</p>
+
+<p>Clarified differences between <a href="12-the-scala-standard-library.html#root-classes"><code>isInstanceOf</code> and pattern matches</a>.</p>
+
+<p>Allowed <a href="06-expressions.html#anonymous-functions"><code>implicit</code> modifier on function literals</a> with a single parameter.</p>
+
+<h2 id="changes-in-version-2-7-2">Changes in Version 2.7.2</h2>
+
+<p><em>(10-Nov-2008)</em></p>
+
+<h4 id="precedence-of-assignment-operators">Precedence of Assignment Operators</h4>
+
+<p>The <a href="06-expressions.html#prefix,-infix,-and-postfix-operations">precedence of assignment operators</a>
+has been brought in line with. From now on <code>+=</code>, has the same precedence as <code>=</code>.</p>
+
+<h4 id="wildcards-as-function-parameters">Wildcards as function parameters</h4>
+
+<p>A formal parameter to an anonymous function may now be a
+<a href="06-expressions.html#placeholder-syntax-for-anonymous-functions">wildcard represented by an underscore</a>.</p>
+
+<blockquote>
+<div class="highlight"><pre><code class="language-text" data-lang="text"> _ =&gt; 7   // The function that ignores its argument
+          // and always returns 7.
+</code></pre></div></blockquote>
+
+<h4 id="unicode-alternative-for-left-arrow">Unicode alternative for left arrow</h4>
+
+<p>The Unicode glyph ‘\(\leftarrow\)’ \(<code>\u2190</code>\) is now treated as a reserved
+identifier, equivalent to the ASCII symbol ‘<code>&lt;-</code>’.</p>
+
+<h2 id="changes-in-version-2-7-1">Changes in Version 2.7.1</h2>
+
+<p><em>(09-April-2008)</em></p>
+
+<h4 id="change-in-scoping-rules-for-wildcard-placeholders-in-types">Change in Scoping Rules for Wildcard Placeholders in Types</h4>
+
+<p>A wildcard in a type now binds to the closest enclosing type
+application. For example <code>List[List[_]]</code> is now equivalent to this
+existential type:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">List[List[t] forSome { type t }]
+</code></pre></div>
+<p>In version 2.7.0, the type expanded instead to:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">List[List[t]] forSome { type t }
+</code></pre></div>
+<p>The new convention corresponds exactly to the way wildcards in Java are
+interpreted.</p>
+
+<h4 id="no-contractiveness-requirement-for-implicits">No Contractiveness Requirement for Implicits</h4>
+
+<p>The contractiveness requirement for
+<a href="07-implicits.html#implicit-parameters">implicit method definitions</a>
+has been dropped. Instead it is checked for each implicit expansion individually
+that the expansion does not result in a cycle or a tree of infinitely
+growing types.</p>
+
+<h2 id="changes-in-version-2-7-0">Changes in Version 2.7.0</h2>
+
+<p><em>(07-Feb-2008)</em></p>
+
+<h4 id="java-generics">Java Generics</h4>
+
+<p>Scala now supports Java generic types by default:</p>
+
+<ul>
+<li><p>A generic type in Java such as <code>ArrayList&lt;String&gt;</code> is translated to
+a generic type in Scala: <code>ArrayList[String]</code>.</p></li>
+<li><p>A wildcard type such as <code>ArrayList&lt;? extends Number&gt;</code> is translated
+to <code>ArrayList[_ &lt;: Number]</code>. This is itself a shorthand for the
+existential type <code>ArrayList[T] forSome { type T &lt;: Number }</code>.</p></li>
+<li><p>A raw type in Java such as <code>ArrayList</code> is translated to
+<code>ArrayList[_]</code>, which is a shorthand for
+<code>ArrayList[T] forSome { type T }</code>.</p></li>
+</ul>
+
+<p>This translation works if <code>-target:jvm-1.5</code> is specified, which is the
+new default. For any other target, Java generics are not recognized. To
+ensure upgradability of Scala codebases, extraneous type parameters for
+Java classes under <code>-target:jvm-1.4</code> are simply ignored. For instance,
+when compiling with <code>-target:jvm-1.4</code>, a Scala type such as
+<code>ArrayList[String]</code> is simply treated as the unparameterized type
+<code>ArrayList</code>.</p>
+
+<h4 id="changes-to-case-classes">Changes to Case Classes</h4>
+
+<p>The Scala compiler generates a <a href="05-classes-and-objects.html#case-classes">companion extractor object for every case class</a> now. For instance, given the case class:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">  case class X(elem: String)
+</code></pre></div>
+<p>the following companion object is generated:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">  object X {
+    def unapply(x: X): Some[String] = Some(x.elem)
+    def apply(s: String): X = new X(s)
+  }
+</code></pre></div>
+<p>If the object exists already, only the <code>apply</code> and <code>unapply</code> methods are
+added to it.</p>
+
+<p>Three restrictions on case classes have been removed.</p>
+
+<ol>
+<li><p>Case classes can now inherit from other case classes.</p></li>
+<li><p>Case classes may now be <code>abstract</code>.</p></li>
+<li><p>Case classes may now come with companion objects.</p></li>
+</ol>
+
+<h2 id="changes-in-version-2-6-1">Changes in Version 2.6.1</h2>
+
+<p><em>(30-Nov-2007)</em></p>
+
+<h4 id="mutable-variables-introduced-by-pattern-binding">Mutable variables introduced by pattern binding</h4>
+
+<p><a href="04-basic-declarations-and-definitions.html#variable-declarations-and-definitions">Mutable variables can now be introduced by a pattern matching definition</a>,
+just like values can. Examples:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">  var (x, y) = if (positive) (1, 2) else (-1, -3)
+  var hd :: tl = mylist
+</code></pre></div>
+<h4 id="self-types">Self-types</h4>
+
+<p>Self types can now be introduced without defining an alias name for
+<a href="05-classes-and-objects.html#templates"><code>this</code></a>. Example:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">  class C {
+    type T &lt;: Trait
+    trait Trait { this: T =&gt; ... }
+  }
+</code></pre></div>
+<h2 id="changes-in-version-2-6">Changes in Version 2.6</h2>
+
+<p><em>(27-July-2007)</em></p>
+
+<h4 id="existential-types">Existential types</h4>
+
+<p>It is now possible to define <a href="03-types.html#existential-types">existential types</a>.
+An existential type has the form <code>T forSome {Q}</code> where <code>Q</code> is a sequence of value and/or
+type declarations. Given the class definitions</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">class Ref[T]
+abstract class Outer { type T }
+</code></pre></div>
+<p>one may for example write the following existential types</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">Ref[T] forSome { type T &lt;: java.lang.Number }
+Ref[x.T] forSome { val x: Outer }
+</code></pre></div>
+<h4 id="lazy-values">Lazy values</h4>
+
+<p>It is now possible to define lazy value declarations using the new modifier
+<a href="04-basic-declarations-and-definitions.html#value-declarations-and-definitions"><code>lazy</code></a>.
+A <code>lazy</code> value definition evaluates its right hand
+side \(e\) the first time the value is accessed. Example:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">import compat.Platform._
+val t0 = currentTime
+lazy val t1 = currentTime
+val t2 = currentTime
+
+println(&quot;t0 &lt;= t2: &quot; + (t0 &lt;= t2))  //true
+println(&quot;t1 &lt;= t2: &quot; + (t1 &lt;= t2))  //false (lazy evaluation of t1)
+</code></pre></div>
+<h4 id="structural-types">Structural types</h4>
+
+<p>It is now possible to declare structural types using <a href="03-types.html#compound-types">type refinements</a>. For example:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">class File(name: String) {
+  def getName(): String = name
+  def open() { /*..*/ }
+  def close() { println(&quot;close file&quot;) }
+}
+def test(f: { def getName(): String }) { println(f.getName) }
+
+test(new File(&quot;test.txt&quot;))
+test(new java.io.File(&quot;test.txt&quot;))
+</code></pre></div>
+<p>There’s also a shorthand form for creating values of structural types.
+For instance,</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">new { def getName() = &quot;aaron&quot; }
+</code></pre></div>
+<p>is a shorthand for</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">new AnyRef{ def getName() = &quot;aaron&quot; }
+</code></pre></div>
+<h2 id="changes-in-version-2-5">Changes in Version 2.5</h2>
+
+<p><em>(02-May-2007)</em></p>
+
+<h4 id="type-constructor-polymorphism">Type constructor polymorphism</h4>
+
+<p><em>Implemented by Adriaan Moors</em></p>
+
+<p><a href="04-basic-declarations-and-definitions.html#type-parameters">Type parameters</a>
+and abstract
+<a href="04-basic-declarations-and-definitions.html#type-declarations-and-type-aliases">type members</a> can now also abstract over <a href="03-types.html#type-constructors">type constructors</a>.</p>
+
+<p>This allows a more precise <code>Iterable</code> interface:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">trait Iterable[+T] {
+  type MyType[+T] &lt;: Iterable[T] // MyType is a type constructor
+
+  def filter(p: T =&gt; Boolean): MyType[T] = ...
+  def map[S](f: T =&gt; S): MyType[S] = ...
+}
+
+abstract class List[+T] extends Iterable[T] {
+  type MyType[+T] = List[T]
+}
+</code></pre></div>
+<p>This definition of <code>Iterable</code> makes explicit that mapping a function
+over a certain structure (e.g., a <code>List</code>) will yield the same structure
+(containing different elements).</p>
+
+<h4 id="early-object-initialization">Early object initialization</h4>
+
+<p><a href="05-classes-and-objects.html#early-definitions">Early object initialization</a>
+makes it possible to initialize some fields of an object before any
+parent constructors are called. This is particularly useful for
+traits, which do not have normal constructor parameters. Example:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">trait Greeting {
+  val name: String
+  val msg = &quot;How are you, &quot;+name
+}
+class C extends {
+  val name = &quot;Bob&quot;
+} with Greeting {
+  println(msg)
+}
+</code></pre></div>
+<p>In the code above, the field is initialized before the constructor of is
+called. Therefore, field <code>msg</code> in class is properly initialized to .</p>
+
+<h4 id="for-comprehensions-revised">For-comprehensions, revised</h4>
+
+<p>The syntax of <a href="06-expressions.html#for-comprehensions-and-for-loops">for-comprehensions</a>
+has changed.
+In the new syntax, generators do not start with a <code>val</code> anymore, but filters
+start with an <code>if</code> (and are called guards).
+A semicolon in front of a guard is optional. For example:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">for (val x &lt;- List(1, 2, 3); x % 2 == 0) println(x)
+</code></pre></div>
+<p>is now written</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">for (x &lt;- List(1, 2, 3) if x % 2 == 0) println(x)
+</code></pre></div>
+<p>The old syntax is still available but will be deprecated in the future.</p>
+
+<h4 id="implicit-anonymous-functions">Implicit anonymous functions</h4>
+
+<p>It is now possible to define <a href="06-expressions.html#placeholder-syntax-for-anonymous-functions">anonymous functions using underscores</a> in
+parameter position. For instance, the expressions in the left column
+are each function values which expand to the anonymous functions on
+their right.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">_ + 1                  x =&gt; x + 1
+_ * _                  (x1, x2) =&gt; x1 * x2
+(_: int) * 2           (x: int) =&gt; (x: int) * 2
+if (_) x else y        z =&gt; if (z) x else y
+_.map(f)               x =&gt; x.map(f)
+_.map(_ + 1)           x =&gt; x.map(y =&gt; y + 1)
+</code></pre></div>
+<p>As a special case, a <a href="06-expressions.html#method-values">partially unapplied method</a>
+is now designated <code>m _</code>   instead of the previous notation  <code>&amp;m</code>.</p>
+
+<p>The new notation will displace the special syntax forms <code>.m()</code> for
+abstracting over method receivers and <code>&amp;m</code> for treating an unapplied
+method as a function value. For the time being, the old syntax forms are
+still available, but they will be deprecated in the future.</p>
+
+<h4 id="pattern-matching-anonymous-functions-refined">Pattern matching anonymous functions, refined</h4>
+
+<p>It is now possible to use <a href="08-pattern-matching.html#pattern-matching-anonymous-functions">case clauses to define a function value</a>
+directly for functions of arities greater than one. Previously, only
+unary functions could be defined that way. Example:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">def scalarProduct(xs: Array[Double], ys: Array[Double]) =
+  (0.0 /: (xs zip ys)) {
+    case (a, (b, c)) =&gt; a + b * c
+  }
+</code></pre></div>
+<h2 id="changes-in-version-2-4">Changes in Version 2.4</h2>
+
+<p><em>(09-Mar-2007)</em></p>
+
+<h4 id="object-local-private-and-protected">Object-local private and protected</h4>
+
+<p>The <code>private</code> and <code>protected</code> modifiers now accept a
+<a href="05-classes-and-objects.html#modifiers"><code>[this]</code> qualifier</a>.
+A definition \(M\) which is labelled <code>private[this]</code> is private,
+and in addition can be accessed only from within the current object.
+That is, the only legal prefixes for \(M\) are <code>this</code> or <code>$C$.this</code>.
+Analogously, a definition \(M\) which is labelled <code>protected[this]</code> is
+protected, and in addition can be accessed only from within the current
+object.</p>
+
+<h4 id="tuples-revised">Tuples, revised</h4>
+
+<p>The syntax for <a href="06-expressions.html#tuples">tuples</a> has been changed from \(\{…\}\) to
+\((…)\). For any sequence of types \(T_1 , … , T_n\),</p>
+
+<p>\((T_1 , … , T_n)\) is a shorthand for <code>Tuple$n$[$T_1 , … , T_n$]</code>.</p>
+
+<p>Analogously, for any sequence of expressions or patterns \(x_1
+, … , x_n\),</p>
+
+<p>\((x_1 , … , x_n)\) is a shorthand for <code>Tuple$n$($x_1 , … , x_n$)</code>.</p>
+
+<h4 id="access-modifiers-for-primary-constructors">Access modifiers for primary constructors</h4>
+
+<p>The primary constructor of a class can now be marked <a href="05-classes-and-objects.html#class-definitions"><code>private</code> or <code>protected</code></a>.
+If such an access modifier is given, it comes between the name of the class and its
+value parameters. Example:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">class C[T] private (x: T) { ... }
+</code></pre></div>
+<h4 id="annotations">Annotations</h4>
+
+<p>The support for attributes has been extended and its syntax changed.
+Attributes are now called <a href="11-annotations.html"><em>annotations</em></a>. The syntax has
+been changed to follow Java’s conventions, e.g. <code>@attribute</code> instead of
+<code>[attribute]</code>. The old syntax is still available but will be deprecated
+in the future.</p>
+
+<p>Annotations are now serialized so that they can be read by compile-time
+or run-time tools. Class has two sub-traits which are used to indicate
+how annotations are retained. Instances of an annotation class
+inheriting from trait will be stored in the generated class files.
+Instances of an annotation class inheriting from trait will be visible
+to the Scala type-checker in every compilation unit where the annotated
+symbol is accessed.</p>
+
+<h4 id="decidable-subtyping">Decidable subtyping</h4>
+
+<p>The implementation of subtyping has been changed to prevent infinite
+recursions.
+<a href="05-classes-and-objects.html#inheritance-closure">Termination of subtyping</a>
+is now ensured by a new restriction of class graphs to be finitary.</p>
+
+<h4 id="case-classes-cannot-be-abstract">Case classes cannot be abstract</h4>
+
+<p>It is now explicitly ruled out that case classes can be abstract. The
+specification was silent on this point before, but did not explain how
+abstract case classes were treated. The Scala compiler allowed the
+idiom.</p>
+
+<h4 id="new-syntax-for-self-aliases-and-self-types">New syntax for self aliases and self types</h4>
+
+<p>It is now possible to give an explicit alias name and/or type for the
+<a href="05-classes-and-objects.html#templates">self reference</a> <code>this</code>. For instance, in</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">class C { self: D =&gt;
+  ...
+}
+</code></pre></div>
+<p>the name <code>self</code> is introduced as an alias for <code>this</code> within <code>C</code> and the
+<a href="05-classes-and-objects.html#class-definitions">self type</a> of <code>C</code> is
+assumed to be <code>D</code>. This construct is introduced now in order to replace
+eventually both the qualified this construct and the clause in Scala.</p>
+
+<h4 id="assignment-operators">Assignment Operators</h4>
+
+<p>It is now possible to <a href="06-expressions.html#assignment-operators">combine operators with assignments</a>. Example:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">var x: int = 0
+x += 1
+</code></pre></div>
+<h2 id="changes-in-version-2-3-2">Changes in Version 2.3.2</h2>
+
+<p><em>(23-Jan-2007)</em></p>
+
+<h4 id="extractors">Extractors</h4>
+
+<p>It is now possible to define patterns independently of case classes, using
+<code>unapply</code> methods in <a href="08-pattern-matching.html#extractor-patterns">extractor objects</a>.
+Here is an example:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">object Twice {
+  def apply(x:Int): int = x*2
+  def unapply(z:Int): Option[int] = if (z%2==0) Some(z/2) else None
+}
+val x = Twice(21)
+x match { case Twice(n) =&gt; Console.println(n) } // prints 21
+</code></pre></div>
+<p>In the example, <code>Twice</code> is an extractor object with two methods:</p>
+
+<ul>
+<li><p>The <code>apply</code> method is used to build even numbers.</p></li>
+<li><p>The <code>unapply</code> method is used to decompose an even number; it is in a sense
+the reverse of <code>apply</code>. <code>unapply</code> methods return option types:
+<code>Some(...)</code> for a match that succeeds, <code>None</code> for a match that fails.
+Pattern variables are returned as the elements of <code>Some</code>.
+If there are several variables, they are grouped in a tuple.</p></li>
+</ul>
+
+<p>In the second-to-last line, <code>Twice</code>’s method is used to construct a number <code>x</code>.
+In the last line, <code>x</code> is tested against the pattern <code>Twice(n)</code>.
+This pattern succeeds for even numbers and assigns to the variable <code>n</code> one half
+of the number that was tested.
+The pattern match makes use of the <code>unapply</code> method of object <code>Twice</code>.
+More details on extractors can be found in the paper “Matching Objects with
+Patterns” by Emir, Odersky and Williams.</p>
+
+<h4 id="tuples">Tuples</h4>
+
+<p>A new <a href="06-expressions.html#tuples">lightweight syntax for tuples</a> has been introduced.
+For any sequence of types \(T_1 , … , T_n\),</p>
+
+<p>\({T_1 , … , T_n }\) is a shorthand for <code>Tuple$n$[$T_1 , … , T_n$]</code>.</p>
+
+<p>Analogously, for any sequence of expressions or patterns \(x_1, … , x_n\),</p>
+
+<p>\({x_1 , … , x_n }\) is a shorthand for <code>Tuple$n$($x_1 , … , x_n$)</code>.</p>
+
+<h4 id="infix-operators-of-greater-arities">Infix operators of greater arities</h4>
+
+<p>It is now possible to use methods which have more than one parameter as
+<a href="06-expressions.html#infix-operations">infix operators</a>. In this case, all
+method arguments are written as a normal parameter list in parentheses. Example:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">class C {
+  def +(x: int, y: String) = ...
+}
+val c = new C
+c + (1, &quot;abc&quot;)
+</code></pre></div>
+<h4 id="deprecated-attribute">Deprecated attribute</h4>
+
+<p>A new standard attribute <a href="11-annotations.html#deprecation-annotations"><code>deprecated</code></a>
+is available. If a member definition is marked with this attribute, any
+reference to the member will cause a “deprecated” warning message to be emitted.</p>
+
+<h2 id="changes-in-version-2-3">Changes in Version 2.3</h2>
+
+<p><em>(23-Nov-2006)</em></p>
+
+<h4 id="procedures">Procedures</h4>
+
+<p>A simplified syntax for <a href="04-basic-declarations-and-definitions.html#procedures">methods returning <code>unit</code></a> has been introduced.
+Scala now allows the following shorthands:</p>
+
+<p><code>def f(params)</code> \(\mbox{for}\) <code>def f(params): unit</code>
+<code>def f(params) { ... }</code> \(\mbox{for}\) <code>def f(params): unit = { ... }</code></p>
+
+<h4 id="type-patterns">Type Patterns</h4>
+
+<p>The <a href="08-pattern-matching.html#type-patterns">syntax of types in patterns</a> has
+been refined.
+Scala now distinguishes between type variables (starting with a lower case
+letter) and types as type arguments in patterns.
+Type variables are bound in the pattern.
+Other type arguments are, as in previous versions, erased.
+The Scala compiler will now issue an “unchecked” warning at places where type
+erasure might compromise type-safety.</p>
+
+<h4 id="standard-types">Standard Types</h4>
+
+<p>The recommended names for the two bottom classes in Scala’s type
+hierarchy have changed as follows:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">All      ==&gt;     Nothing
+AllRef   ==&gt;     Null
+</code></pre></div>
+<p>The old names are still available as type aliases.</p>
+
+<h2 id="changes-in-version-2-1-8">Changes in Version 2.1.8</h2>
+
+<p><em>(23-Aug-2006)</em></p>
+
+<h4 id="visibility-qualifier-for-protected">Visibility Qualifier for protected</h4>
+
+<p>Protected members can now have a visibility qualifier, e.g.
+<a href="05-classes-and-objects.html#protected"><code>protected[&lt;qualifier&gt;]</code></a>.
+In particular, one can now simulate package protected access as in Java writing</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">  protected[P] def X ...
+</code></pre></div>
+<p>where would name the package containing <code>X</code>.</p>
+
+<h4 id="relaxation-of-private-access">Relaxation of Private Access</h4>
+
+<p><a href="05-classes-and-objects.html#private">Private members of a class</a> can now be
+referenced from the companion module of the class and vice versa.</p>
+
+<h4 id="implicit-lookup">Implicit Lookup</h4>
+
+<p>The lookup method for <a href="07-implicits.html#implicit-parameters">implicit definitions</a>
+has been generalized.
+When searching for an implicit definition matching a type \(T\), now are considered</p>
+
+<ol>
+<li><p>all identifiers accessible without prefix, and</p></li>
+<li><p>all members of companion modules of classes associated with \(T\).</p></li>
+</ol>
+
+<p>(The second clause is more general than before). Here, a class is <em>associated</em>
+with a type \(T\) if it is referenced by some part of \(T\), or if it is a
+base class of some part of \(T\).
+For instance, to find implicit members corresponding to the type</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">  HashSet[List[Int], String]
+</code></pre></div>
+<p>one would now look in the companion modules (aka static parts) of <code>HashSet</code>,
+<code>List</code>, <code>Int</code>, and <code>String</code>. Before, it was just the static part of .</p>
+
+<h4 id="tightened-pattern-match">Tightened Pattern Match</h4>
+
+<p>A typed <a href="08-pattern-matching.html#type-patterns">pattern match with a singleton type <code>p.type</code></a>
+now tests whether the selector value is reference-equal to <code>p</code>. Example:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">  val p = List(1, 2, 3)
+  val q = List(1, 2)
+  val r = q
+  r match {
+    case _: p.type =&gt; Console.println(&quot;p&quot;)
+    case _: q.type =&gt; Console.println(&quot;q&quot;)
+  }
+</code></pre></div>
+<p>This will match the second case and hence will print “q”. Before, the
+singleton types were erased to <code>List</code>, and therefore the first case would have
+matched, which is non-sensical.</p>
+
+<h2 id="changes-in-version-2-1-7">Changes in Version 2.1.7</h2>
+
+<p><em>(19-Jul-2006)</em></p>
+
+<h4 id="multi-line-string-literals">Multi-Line string literals</h4>
+
+<p>It is now possible to write <a href="01-lexical-syntax.html#string-literals">multi-line string-literals</a> enclosed in triple quotes. Example:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">&quot;&quot;&quot;this is a
+   multi-line
+   string literal&quot;&quot;&quot;
+</code></pre></div>
+<p>No escape substitutions except for unicode escapes are performed in such
+string literals.</p>
+
+<h4 id="closure-syntax">Closure Syntax</h4>
+
+<p>The syntax of <a href="06-expressions.html#anonymous-functions">closures</a>
+has been slightly restricted. The form</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">  x: T =&gt; E
+</code></pre></div>
+<p>is valid only when enclosed in braces, i.e.  <code>{ x: T =&gt; E }</code>. The
+following is illegal, because it might be read as the value x typed with
+the type <code>T =&gt; E</code>:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">  val f = x: T =&gt; E
+</code></pre></div>
+<p>Legal alternatives are:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">  val f = { x: T =&gt; E }
+  val f = (x: T) =&gt; E
+</code></pre></div>
+<h2 id="changes-in-version-2-1-5">Changes in Version 2.1.5</h2>
+
+<p><em>(24-May-2006)</em></p>
+
+<h4 id="class-literals">Class Literals</h4>
+
+<p>There is a new syntax for <a href="06-expressions.html#literals">class literals</a>:
+For any class type \(C\), <code>classOf[$C$]</code> designates the run-time
+representation of \(C\).</p>
+
+<h2 id="changes-in-version-2-0">Changes in Version 2.0</h2>
+
+<p><em>(12-Mar-2006)</em></p>
+
+<p>Scala in its second version is different in some details from the first
+version of the language. There have been several additions and some old
+idioms are no longer supported. This appendix summarizes the main
+changes.</p>
+
+<h4 id="new-keywords">New Keywords</h4>
+
+<p>The following three words are now reserved; they cannot be used as
+<a href="01-lexical-syntax.html#identifiers">identifiers</a>:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">implicit    match     requires
+</code></pre></div>
+<h4 id="newlines-as-statement-separators">Newlines as Statement Separators</h4>
+
+<p><a href="http://www.scala-lang.org/files/archive/spec/2.11/">Newlines</a>
+can now be used as statement separators in place of semicolons.</p>
+
+<h4 id="syntax-restrictions">Syntax Restrictions</h4>
+
+<p>There are some other situations where old constructs no longer work:</p>
+
+<h5 id="pattern-matching-expressions"><em>Pattern matching expressions</em></h5>
+
+<p>The <code>match</code> keyword now appears only as infix operator between a
+selector expression and a number of cases, as in:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">  expr match {
+    case Some(x) =&gt; ...
+    case None =&gt; ...
+  }
+</code></pre></div>
+<p>Variants such as <code>expr.match {...}</code> or just <code>match {...}</code> are no
+longer supported.</p>
+
+<h5 id="“with”-in-extends-clauses"><em>“With” in extends clauses</em></h5>
+
+<p>The idiom</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">class C with M { ... }
+</code></pre></div>
+<p>is no longer supported. A <code>with</code> connective is only allowed following an
+<code>extends</code> clause. For instance, the line above would have to be written</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">class C extends AnyRef with M { ... } .
+</code></pre></div>
+<p>However, assuming <code>M</code> is a <a href="05-classes-and-objects.html#traits">trait</a>,
+it is also legal to write</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">class C extends M { ... }
+</code></pre></div>
+<p>The latter expression is treated as equivalent to</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">class C extends S with M { ... }
+</code></pre></div>
+<p>where <code>S</code> is the superclass of <code>M</code>.</p>
+
+<h5 id="regular-expression-patterns"><em>Regular Expression Patterns</em></h5>
+
+<p>The only form of regular expression pattern that is currently supported
+is a sequence pattern, which might end in a sequence wildcard . Example:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">case List(1, 2, _*) =&gt; ... // will match all lists starting with 1, 2, ...
+</code></pre></div>
+<p>It is at current not clear whether this is a permanent restriction. We
+are evaluating the possibility of re-introducing full regular expression
+patterns in Scala.</p>
+
+<h4 id="selftype-annotations">Selftype Annotations</h4>
+
+<p>The recommended syntax of selftype annotations has changed.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">class C: T extends B { ... }
+</code></pre></div>
+<p>becomes</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">class C requires T extends B { ... }
+</code></pre></div>
+<p>That is, selftypes are now indicated by the new <code>requires</code> keyword. The
+old syntax is still available but is considered deprecated.</p>
+
+<h4 id="for-comprehensions">For-comprehensions</h4>
+
+<p><a href="06-expressions.html#for-comprehensions-and-for-loops">For-comprehensions</a>
+now admit value and pattern definitions. Example:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">for {
+  val x &lt;- List.range(1, 100)
+  val y &lt;- List.range(1, x)
+  val z = x + y
+  isPrime(z)
+} yield Pair(x, y)
+</code></pre></div>
+<p>Note the definition  <code>val z = x + y</code> as the third item in the
+for-comprehension.</p>
+
+<h4 id="conversions">Conversions</h4>
+
+<p>The rules for <a href="06-expressions.html#method-conversions">implicit conversions of methods to functions</a> have been tightened.
+Previously, a parameterized method used as a value was always
+implicitly converted to a function. This could lead to unexpected
+results when method arguments where forgotten. Consider for instance the
+statement below:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">show(x.toString)
+</code></pre></div>
+<p>where <code>show</code> is defined as follows:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">def show(x: String) = Console.println(x) .
+</code></pre></div>
+<p>Most likely, the programmer forgot to supply an empty argument list <code>()</code>
+to <code>toString</code>. The previous Scala version would treat this code as a
+partially applied method, and expand it to:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">show(() =&gt; x.toString())
+</code></pre></div>
+<p>As a result, the address of a closure would be printed instead of the
+value of <code>s</code>.</p>
+
+<p>Scala version 2.0 will apply a conversion from partially applied method
+to function value only if the expected type of the expression is indeed
+a function type. For instance, the conversion would not be applied in
+the code above because the expected type of <code>show</code>’s parameter is
+<code>String</code>, not a function type.</p>
+
+<p>The new convention disallows some previously legal code. Example:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">def sum(f: int =&gt; double)(a: int, b: int): double =
+  if (a &gt; b) 0 else f(a) + sum(f)(a + 1, b)
+
+val sumInts  =  sum(x =&gt; x)  // error: missing arguments
+</code></pre></div>
+<p>The partial application of <code>sum</code> in the last line of the code above will
+not be converted to a function type. Instead, the compiler will produce
+an error message which states that arguments for method <code>sum</code> are
+missing. The problem can be fixed by providing an expected type for the
+partial application, for instance by annotating the definition of
+<code>sumInts</code> with its type:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">val sumInts: (int, int) =&gt; double  =  sum(x =&gt; x)  // OK
+</code></pre></div>
+<p>On the other hand, Scala version 2.0 now automatically applies methods
+with empty parameter lists to <code>()</code> argument lists when necessary. For
+instance, the <code>show</code> expression above will now be expanded to</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">show(x.toString()) .
+</code></pre></div>
+<p>Scala version 2.0 also relaxes the rules of overriding with respect to
+empty parameter lists. The revised definition of
+<a href="05-classes-and-objects.html#class-members"><em>matching members</em></a>
+makes it now possible to override a method with an
+explicit, but empty parameter list <code>()</code> with a parameterless method, and
+<em>vice versa</em>. For instance, the following class definition
+is now legal:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">class C {
+  override def toString: String = ...
+}
+</code></pre></div>
+<p>Previously this definition would have been rejected, because the
+<code>toString</code> method as inherited from <code>java.lang.Object</code> takes an empty
+parameter list.</p>
+
+<h4 id="class-parameters">Class Parameters</h4>
+
+<p>A <a href="05-classes-and-objects.html#class-definitions">class parameter</a>
+may now be prefixed by <code>val</code> or <code>var</code>.</p>
+
+<h4 id="private-qualifiers">Private Qualifiers</h4>
+
+<p>Previously, Scala had three levels of visibility:
+<span><em>private</em></span>, <span><em>protected</em></span> and
+<span><em>public</em></span>. There was no way to restrict accesses to members
+of the current package, as in Java.</p>
+
+<p>Scala 2 now defines <a href="05-classes-and-objects.html#modifiers">access qualifiers</a>
+that let one express this level of visibility, among others. In the definition</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">private[C] def f(...)
+</code></pre></div>
+<p>access to <code>f</code> is restricted to all code within the class or package <code>C</code>
+(which must contain the definition of <code>f</code>).</p>
+
+<h4 id="changes-in-the-mixin-model">Changes in the Mixin Model</h4>
+
+<p>The model which details <a href="05-classes-and-objects.html#templates">mixin composition of classes</a> has changed significantly.
+The main differences are:</p>
+
+<ol>
+<li><p>We now distinguish between <span><em>traits</em></span> that are used as
+mixin classes and normal classes. The syntax of traits has been
+generalized from version 1.0, in that traits are now allowed to have
+mutable fields. However, as in version 1.0, traits still may not
+have constructor parameters.</p></li>
+<li><p>Member resolution and super accesses are now both defined in terms
+of a <span><em>class linearization</em></span>.</p></li>
+<li><p>Scala’s notion of method overloading has been generalized; in
+particular, it is now possible to have overloaded variants of the
+same method in a subclass and in a superclass, or in several
+different mixins. This makes method overloading in Scala
+conceptually the same as in Java.</p></li>
+</ol>
+
+<h4 id="implicit-parameters">Implicit Parameters</h4>
+
+<p>Views in Scala 1.0 have been replaced by the more general concept of
+<a href="07-implicits.html#implicit-parameters">implicit parameters</a>.</p>
+
+<h4 id="flexible-typing-of-pattern-matching">Flexible Typing of Pattern Matching</h4>
+
+<p>The new version of Scala implements more flexible typing rules when it
+comes to <a href="08-pattern-matching.html#pattern-matching-expressions">pattern matching over heterogeneous class hierarchies</a>.
+A <span><em>heterogeneous class hierarchy</em></span> is one where subclasses
+inherit a common superclass with different parameter types. With the new
+rules in Scala version 2.0 one can perform pattern matches over such
+hierarchies with more precise typings that keep track of the information
+gained by comparing the types of a selector and a matching pattern.
+This gives Scala capabilities analogous to guarded algebraic data types.</p>
+
+  </main>
+
+  <script src="public/scripts/toc.js"></script>
+  <script src="public/scripts/highlight.pack.js"></script>
+  <script src="public/scripts/main.js"></script>
+</body>
+</html>
